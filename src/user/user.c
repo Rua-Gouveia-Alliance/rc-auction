@@ -1,19 +1,35 @@
-#include <unistd.h>
+#include <arpa/inet.h>
+#include <getopt.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-int main()
-{
-    char *port = "58010"; // 58000 + group number
+int main(int argc, char *argv[]) {
+    char asip[15] = "127.0.0.1";
+    char asport[5] = "58012"; // 58000 + group number
+
+    int opt;
+    while ((opt = getopt(argc, argv, "n:p:")) != -1) {
+        switch (opt) {
+        case 'n':
+            strncpy(asip, optarg, 15);
+            break;
+        case 'p':
+            strncpy(asport, optarg, 5);
+            break;
+        case '?':
+            printf("Unknown argument: %c\n", opt);
+            break;
+        }
+    }
 }
 
-char *use_udp(char *ip_addr, char *port, char *msg, int size)
-{
+char *use_udp(char *ip_addr, char *port, char *msg, int size) {
 
     int fd, errcode;
     ssize_t n;
@@ -50,8 +66,7 @@ char *use_udp(char *ip_addr, char *port, char *msg, int size)
     return buffer;
 }
 
-char *use_tcp(char *ip_addr, char *port, char *msg, int size)
-{
+char *use_tcp(char *ip_addr, char *port, char *msg, int size) {
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
