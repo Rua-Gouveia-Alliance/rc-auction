@@ -1,3 +1,4 @@
+#include "server.h"
 #include <arpa/inet.h>
 #include <getopt.h>
 #include <netdb.h>
