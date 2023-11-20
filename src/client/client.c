@@ -93,7 +93,7 @@ int prompt() {
         printf("%s", "> ");
         getline(&lineptr, &n, stdin);
         printf("%s\n", lineptr);
-    } while (strncmp(lineptr, "exit", 4) == 0);
+    } while (strncmp(lineptr, "exit", 4) != 0);
 
     free(lineptr);
     return 0;
