@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+static char asip[15] = "127.0.0.1";
+static char asport[5] = "58012"; // 58000 + group number
+
 /*char *use_udp(char *ip_addr, char *port, char *msg, int size) {*/
 
 /*int fd, errcode;*/
@@ -96,13 +99,10 @@ int prompt() {
     } while (strncmp(lineptr, "exit", 4) != 0);
 
     free(lineptr);
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[]) {
-    char asip[15] = "127.0.0.1";
-    char asport[5] = "58012"; // 58000 + group number
-
     int opt;
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
@@ -114,9 +114,9 @@ int main(int argc, char *argv[]) {
             break;
         case '?':
             printf("Unknown argument: %c\n", opt);
+            exit(EXIT_FAILURE);
             break;
         }
     }
-
-    prompt();
+    return prompt();
 }
