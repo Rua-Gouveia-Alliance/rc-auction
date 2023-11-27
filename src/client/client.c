@@ -1,8 +1,7 @@
 #include "client.h"
-#include <arpa/inet.h>
+#include "connection.h"
 #include <getopt.h>
-#include <netdb.h>
-#include <netinet/in.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,90 +12,143 @@
 static char asip[15] = "127.0.0.1";
 static char asport[5] = "58012"; // 58000 + group number
 
-/*char *use_udp(char *ip_addr, char *port, char *msg, int size) {*/
+void login(char *uid, char *password) {}
 
-/*int fd, errcode;*/
-/*ssize_t n;*/
-/*socklen_t addrlen;*/
-/*struct sockaddr_in addr;*/
-/*struct addrinfo hints, *res;*/
-/*char *buffer = (char *)malloc(128 * sizeof(char));*/
+void logout() {}
 
-/*fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket*/
-/*if (fd == -1)                        [>error<]*/
-/*exit(1);*/
+void unregister() {}
 
-/*memset(&hints, 0, sizeof hints);*/
-/*hints.ai_family = AF_INET;      // IPv4*/
-/*hints.ai_socktype = SOCK_DGRAM; // UDP socket*/
+void open_auc(char *name, char *asset_fname, char *start_value,
+              char *timeactive) {}
 
-/*errcode = getaddrinfo(ip_addr, port, &hints, &res);*/
-/*if (errcode != 0) [>error<]*/
-/*exit(1);*/
+void close_auc(char *aid) {}
 
-/*n = sendto(fd, msg, size, 0, res->ai_addr, res->ai_addrlen);*/
-/*if (n == -1) [>error<]*/
-/*exit(1);*/
+void myauctions() {}
 
-/*// TODO: Meter isto aqui bem!!!!*/
-/*addrlen = sizeof(addr);*/
-/*n = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);*/
-/*if (n == -1) [>error<]*/
-/*exit(1);*/
+void mybids() {}
 
-/*freeaddrinfo(res);*/
-/*close(fd);*/
+void list() {}
 
-/*return buffer;*/
-/*}*/
+void show_asset(char *aid) {}
 
-/*char *use_tcp(char *ip_addr, char *port, char *msg, int size) {*/
-/*int fd, errcode;*/
-/*ssize_t n;*/
-/*socklen_t addrlen;*/
-/*struct sockaddr_in addr;*/
-/*struct addrinfo hints, *res;*/
-/*char *buffer = (char *)malloc(128 * sizeof(char));*/
+void bid(char *aid, char *value) {}
 
-/*fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket*/
-/*if (fd == -1)*/
-/*exit(1); // error*/
+void show_record(char *aid) {}
 
-/*memset(&hints, 0, sizeof hints);*/
-/*hints.ai_family = AF_INET;       // IPv4*/
-/*hints.ai_socktype = SOCK_STREAM; // TCP socket*/
+bool prompt_command(char *command) {
+    // split arguments
+    const char delimiter[] = " \t";
+    char *token;
+    char *prompt_args[5];
+    int arg_count = 0;
 
-/*errcode = getaddrinfo(ip_addr, port, &hints, &res);*/
-/*if (errcode != 0) [>error<]*/
-/*exit(1);*/
+    token = strtok(command, delimiter);
+    while (token != NULL) {
+        prompt_args[arg_count++] = token;
+        token = strtok(NULL, delimiter);
 
-/*n = connect(fd, res->ai_addr, res->ai_addrlen);*/
-/*if (n == -1) [>error<]*/
-/*exit(1);*/
+        if (arg_count > 4) {
+            printf("error: too many arguments\n");
+            return false;
+        }
+    }
 
-/*n = write(fd, msg, size);*/
-/*if (n == -1) [>error<]*/
-/*exit(1);*/
+    // execute command
+    if (strcmp(prompt_args[0], "login") == 0) {
+        if (arg_count != 3) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        login(prompt_args[1], prompt_args[2]);
+    } else if (strcmp(prompt_args[0], "logout") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        logout();
+    } else if (strcmp(prompt_args[0], "unregister") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        unregister();
+    } else if (strcmp(prompt_args[0], "exit") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        return true;
+    } else if (strcmp(prompt_args[0], "open") == 0) {
+        if (arg_count != 5) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        open_auc(prompt_args[1], prompt_args[2], prompt_args[3],
+                 prompt_args[4]);
+    } else if (strcmp(prompt_args[0], "close") == 0) {
+        if (arg_count != 2) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        close_auc(prompt_args[1]);
+    } else if (strcmp(prompt_args[0], "myauctions") == 0 ||
+               strcmp(prompt_args[0], "ma") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        myauctions();
+    } else if (strcmp(prompt_args[0], "mybids") == 0 ||
+               strcmp(command, "mb") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        mybids();
+    } else if (strcmp(prompt_args[0], "list") == 0 ||
+               strcmp(command, "l") == 0) {
+        if (arg_count != 1) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        list();
+    } else if (strcmp(prompt_args[0], "show_asset") == 0 ||
+               strcmp(prompt_args[0], "sa") == 0) {
+        if (arg_count != 2) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        show_asset(prompt_args[1]);
+    } else if (strcmp(prompt_args[0], "bid") == 0 ||
+               strcmp(command, "b") == 0) {
+        if (arg_count != 3) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        bid(prompt_args[1], prompt_args[2]);
+    } else if (strcmp(prompt_args[0], "show_record") == 0 ||
+               strcmp(prompt_args[0], "sr") == 0) {
+        if (arg_count != 2) {
+            printf("error: incorrect number of arguments\n");
+            return false;
+        }
+        show_record(prompt_args[1]);
+    } else
+        printf("error: unknown command\n");
 
-/*n = read(fd, buffer, 128);*/
-/*if (n == -1) [>error<]*/
-/*exit(1);*/
-
-/*freeaddrinfo(res);*/
-/*close(fd);*/
-
-/*return buffer;*/
-/*}*/
+    return false;
+}
 
 int prompt() {
     char *lineptr = NULL;
     size_t n = 0;
+    bool exit = false;
 
     do {
         printf("%s", "> ");
         getline(&lineptr, &n, stdin);
-        printf("%s\n", lineptr);
-    } while (strncmp(lineptr, "exit", 4) != 0);
+        exit = prompt_command(lineptr);
+    } while (!exit);
 
     free(lineptr);
     return EXIT_SUCCESS;
@@ -113,7 +165,7 @@ int main(int argc, char *argv[]) {
             strncpy(asport, optarg, 5);
             break;
         case '?':
-            printf("Unknown argument: %c\n", opt);
+            printf("unknown argument: %c\n", opt);
             exit(EXIT_FAILURE);
             break;
         }
