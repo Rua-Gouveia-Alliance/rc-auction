@@ -47,7 +47,7 @@ bool prompt_command(char *command) {
         prompt_args[arg_count++] = token;
         token = strtok(NULL, delimiter);
 
-        if (arg_count > 4) {
+        if (arg_count > 5) {
             printf("error: too many arguments\n");
             return false;
         }
@@ -142,11 +142,19 @@ bool prompt_command(char *command) {
 int prompt() {
     char *lineptr = NULL;
     size_t n = 0;
+    ssize_t line_size;
     bool exit = false;
 
     do {
         printf("%s", "> ");
-        getline(&lineptr, &n, stdin);
+
+        line_size = getline(&lineptr, &n, stdin);
+        // remove \n
+        if (line_size > 0) {
+            if (lineptr[line_size - 1] == '\n')
+                lineptr[line_size - 1] = '\0';
+        }
+
         exit = prompt_command(lineptr);
     } while (!exit);
 
