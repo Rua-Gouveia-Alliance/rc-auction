@@ -29,18 +29,20 @@ void login(char *uid, char *password) {
 
     msg = login_msg(uid, password);
     response = use_udp(asip, asport, msg, LOGIN_MSG_SIZE);
+
+    // TODO: interpret server response
     printf("%s\n", response);
 
     // clear current uid and password
     memset(user.uid, 0, sizeof(user.uid));
     memset(user.password, 0, sizeof(user.password));
-
     // copy new uid and password
     strcpy(user.uid, uid);
     strcpy(user.password, password);
 
     free(msg);
     free(response);
+    return;
 }
 
 void logout() {}

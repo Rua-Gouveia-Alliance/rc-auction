@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// TODO: test connection protocols
 char *use_udp(char *ip_addr, char *port, char *msg, int size) {
 
     int fd, errcode;
