@@ -3,6 +3,11 @@
 
 #include <stdbool.h>
 
+typedef struct User {
+    char uid[7];
+    char password[9];
+} User;
+
 void login(char *uid, char *password);
 
 void logout();

@@ -1,5 +1,7 @@
 #include "client.h"
+#include "../util.h"
 #include "connection.h"
+#include "protocol.h"
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,8 +11,37 @@
 
 static char asip[16] = "127.0.0.1";
 static char asport[6] = "58012"; // 58000 + group number
+static User user;
 
-void login(char *uid, char *password) {}
+void login(char *uid, char *password) {
+    char *msg, *response;
+    // check for valid arguments
+    // UID
+    if (strlen(uid) != UID_SIZE || !is_numeric(uid)) {
+        printf("error: wrong uid format");
+        return;
+    }
+    // password
+    if (strlen(password) != PASS_SIZE || !is_alphanumeric(password)) {
+        printf("error: wrong password format");
+        return;
+    }
+
+    msg = login_msg(uid, password);
+    response = use_udp(asip, asport, msg, LOGIN_MSG_SIZE);
+    printf("%s\n", response);
+
+    // clear current uid and password
+    memset(user.uid, 0, sizeof(user.uid));
+    memset(user.password, 0, sizeof(user.password));
+
+    // copy new uid and password
+    strcpy(user.uid, uid);
+    strcpy(user.password, password);
+
+    free(msg);
+    free(response);
+}
 
 void logout() {}
 
@@ -165,10 +196,12 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
         case 'n':
+            // TODO: check for valid ip/url
             memset(asip, 0, sizeof(asip));
             strncpy(asip, optarg, 15);
             break;
         case 'p':
+            // TODO: check for valid port num
             memset(asport, 0, sizeof(asport));
             strncpy(asport, optarg, 5);
             break;
