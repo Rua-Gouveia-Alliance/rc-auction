@@ -5,12 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-static char asip[15] = "127.0.0.1";
-static char asport[5] = "58012"; // 58000 + group number
+static char asip[16] = "127.0.0.1";
+static char asport[6] = "58012"; // 58000 + group number
 
 void login(char *uid, char *password) {}
 
@@ -167,9 +165,11 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
         case 'n':
+            memset(asip, 0, sizeof(asip));
             strncpy(asip, optarg, 15);
             break;
         case 'p':
+            memset(asport, 0, sizeof(asport));
             strncpy(asport, optarg, 5);
             break;
         case '?':
