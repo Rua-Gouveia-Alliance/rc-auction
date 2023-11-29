@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 typedef struct User {
+    bool logged_in;
     char uid[7];
     char password[9];
 } User;

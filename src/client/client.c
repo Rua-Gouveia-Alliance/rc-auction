@@ -9,26 +9,32 @@
 #include <string.h>
 #include <unistd.h>
 
-static char asip[16] = "127.0.0.1";
+static char asip[128] = "127.0.0.1";
 static char asport[6] = "58012"; // 58000 + group number
-static User user;
+static User user = {false, "", ""};
 
 void login(char *uid, char *password) {
-    char *msg, *response;
+    char *request, *response;
+
+    if (user.logged_in) {
+        printf("error: already logged in\n");
+        return;
+    }
+
     // check for valid arguments
     // UID
     if (strlen(uid) != UID_SIZE || !is_numeric(uid)) {
-        printf("error: wrong uid format");
+        printf("error: wrong uid format\n");
         return;
     }
     // password
     if (strlen(password) != PASS_SIZE || !is_alphanumeric(password)) {
-        printf("error: wrong password format");
+        printf("error: wrong password format\n");
         return;
     }
 
-    msg = login_msg(uid, password);
-    response = use_udp(asip, asport, msg, LOGIN_MSG_SIZE);
+    request = login_req(uid, password);
+    response = use_udp(asip, asport, request, LOGIN_MSG_SIZE);
 
     // TODO: interpret server response
     printf("%s\n", response);
@@ -39,13 +45,36 @@ void login(char *uid, char *password) {
     // copy new uid and password
     strcpy(user.uid, uid);
     strcpy(user.password, password);
+    user.logged_in = true;
 
-    free(msg);
+    free(request);
     free(response);
     return;
 }
 
-void logout() {}
+void logout() {
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = logout_req(user.uid, user.password);
+    response = use_udp(asip, asport, request, LOGOUT_MSG_SIZE);
+
+    // TODO: interpret server response
+    printf("%s\n", response);
+
+    // clear current uid and password
+    memset(user.uid, 0, sizeof(user.uid));
+    memset(user.password, 0, sizeof(user.password));
+    user.logged_in = false;
+
+    free(request);
+    free(response);
+    return;
+}
 
 void unregister() {}
 
@@ -200,7 +229,7 @@ int main(int argc, char *argv[]) {
         case 'n':
             // TODO: check for valid ip/url
             memset(asip, 0, sizeof(asip));
-            strncpy(asip, optarg, 15);
+            strcpy(asip, optarg);
             break;
         case 'p':
             // TODO: check for valid port num
@@ -213,5 +242,9 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
+
+    printf("Auction Client\n\n");
+    printf("Server IP/URL: %s\n", asip);
+    printf("Server PORT: %s\n\n", asport);
     return prompt();
 }

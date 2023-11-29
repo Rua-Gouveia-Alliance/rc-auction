@@ -11,7 +11,6 @@
 
 // TODO: test connection protocols
 char *use_udp(char *ip_addr, char *port, char *msg, int size) {
-
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
@@ -19,31 +18,34 @@ char *use_udp(char *ip_addr, char *port, char *msg, int size) {
     struct addrinfo hints, *res;
     char *buffer = (char *)malloc(128 * sizeof(char));
 
-    fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
-    if (fd == -1)                        /*error*/
+    // setup socket
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1)
         exit(1);
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;      // IPv4
-    hints.ai_socktype = SOCK_DGRAM; // UDP socket
+    // setup hints
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
 
+    // dns
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
-    if (errcode != 0) /*error*/
+    if (errcode != 0)
         exit(1);
 
+    // send
     n = sendto(fd, msg, size, 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1) /*error*/
+    if (n == -1)
         exit(1);
 
-    // TODO: Meter isto aqui bem!!!!
+    // receive
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
-    if (n == -1) /*error*/
+    if (n == -1)
         exit(1);
 
     freeaddrinfo(res);
     close(fd);
-
     return buffer;
 }
 

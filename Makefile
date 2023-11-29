@@ -8,11 +8,13 @@ SRC_DIRS := ./src
 SRCS := $(shell find $(SRC_DIRS) -name '*.c')
 CLIENT_SRCS := $(shell find $(SRC_DIRS)/client -name '*.c')
 SERVER_SRCS := $(shell find $(SRC_DIRS)/server -name '*.c')
+UTIL_SRC := $(SRC_DIRS)/util.c
 
 # Prepends BUILD_DIR and appends .o to every src file
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 CLIENT_OBJS := $(CLIENT_SRCS:%=$(BUILD_DIR)/%.o)
 SERVER_OBJS := $(SERVER_SRCS:%=$(BUILD_DIR)/%.o)
+UTIL_OBJ := $(BUILD_DIR)/$(SRC_DIRS)/util.c.o
 
 # String substitution (suffix version without %).
 DEPS := $(OBJS:.o=.d)
@@ -29,11 +31,11 @@ CFLAGS := $(INC_FLAGS) -MMD -MP
 all: $(CLIENT_TARGET_EXEC) $(SERVER_TARGET_EXEC)
 
 # The final build step.
-$(CLIENT_TARGET_EXEC): $(CLIENT_OBJS)
-	$(CC) $(CLIENT_OBJS) -o $@ $(LDFLAGS)
+$(CLIENT_TARGET_EXEC): $(CLIENT_OBJS) $(UTIL_OBJ)
+	$(CC) $(CLIENT_OBJS) $(UTIL_OBJ) -o $@ $(LDFLAGS)
 
-$(SERVER_TARGET_EXEC): $(SERVER_OBJS)
-	$(CC) $(SERVER_OBJS) -o $@ $(LDFLAGS)
+$(SERVER_TARGET_EXEC): $(SERVER_OBJS) $(UTIL_OBJ)
+	$(CC) $(SERVER_OBJS) $(UTIL_OBJ) -o $@ $(LDFLAGS)
 
 # Build step for C source
 $(BUILD_DIR)/%.c.o: %.c
