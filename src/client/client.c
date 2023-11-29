@@ -206,6 +206,8 @@ int prompt() {
     bool exit = false;
 
     do {
+        if (user.logged_in)
+            printf("(%s) ", user.uid);
         printf("%s", "> ");
 
         line_size = getline(&lineptr, &n, stdin);
