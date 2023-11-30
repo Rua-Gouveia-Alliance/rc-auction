@@ -15,6 +15,7 @@ static User user = {false, "", ""};
 
 void login(char *uid, char *password) {
     char *request, *response;
+    bool ok;
 
     if (user.logged_in) {
         printf("error: already logged in\n");
@@ -36,8 +37,12 @@ void login(char *uid, char *password) {
     request = login_req(uid, password);
     response = use_udp(asip, asport, request, LOGIN_MSG_SIZE);
 
-    // TODO: interpret server response
-    printf("%s\n", response);
+    ok = login_res(response, true);
+    if (!ok) {
+        free(request);
+        free(response);
+        return;
+    }
 
     // clear current uid and password
     memset(user.uid, 0, sizeof(user.uid));
@@ -54,6 +59,7 @@ void login(char *uid, char *password) {
 
 void logout() {
     char *request, *response;
+    bool ok;
 
     if (!user.logged_in) {
         printf("error: not logged in\n");
@@ -63,8 +69,12 @@ void logout() {
     request = logout_req(user.uid, user.password);
     response = use_udp(asip, asport, request, LOGOUT_MSG_SIZE);
 
-    // TODO: interpret server response
-    printf("%s\n", response);
+    ok = logout_res(response, true);
+    if (!ok) {
+        free(request);
+        free(response);
+        return;
+    }
 
     // clear current uid and password
     memset(user.uid, 0, sizeof(user.uid));
