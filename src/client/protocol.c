@@ -1,4 +1,5 @@
 #include "protocol.h"
+#include "../util.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,5 +108,64 @@ bool unregister_res(char *response, bool print) {
         if (print)
             printf("error: wrong server response format\n");
         return false;
+    }
+}
+
+char *list_req() {
+    // setup buffer
+    char *msg = malloc((LST_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (LST_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, LST_REQ);
+    return msg;
+}
+
+void list_res(char *response, bool print) {
+    int last_pos;
+    char *token, *list_pos;
+
+    last_pos = strlen(response) - 1;
+    if (strncmp(response, RLS_OK, RLS_OK_SIZE) == 0) {
+        // check \n
+        if (response[last_pos] != '\n') {
+            if (print)
+                printf("error: wrong server response format\n");
+            return;
+        }
+        response[last_pos] = '\0'; // replace \n with \0
+
+        list_pos = response + RLS_OK_SIZE;
+        token = strtok(list_pos, " ");
+        while (token != NULL) {
+            // AID
+            if (strlen(token) != 3 || !is_numeric(token)) {
+                if (print)
+                    printf("error: wrong server response format\n");
+                return;
+            }
+            if (print)
+                printf("%s", token);
+
+            // status
+            token = strtok(NULL, " ");
+            if (token == NULL || strlen(token) != 1 ||
+                (*token != '0' && *token != '1')) {
+                if (print)
+                    printf("error: wrong server response format\n");
+                return;
+            }
+            if (print)
+                printf(" (%s)\n", *token == '1' ? "active" : "inactive");
+
+            // next token
+            token = strtok(NULL, " ");
+        }
+    } else if (strcmp(response, RLS_NOK) == 0) {
+        if (print)
+            printf("no auctions started yet\n");
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
     }
 }

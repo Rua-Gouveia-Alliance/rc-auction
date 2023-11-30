@@ -6,6 +6,9 @@
 #define UID_SIZE 6
 #define PASS_SIZE 8
 
+#define RECV_SIZE_DEFAULT 128
+#define RECV_SIZE_LST (6 * 1024)
+
 #define CMD_SIZE 3
 
 #define LIN_REQ "LIN "
@@ -26,6 +29,12 @@
 #define RUR_NOK "RUR NOK\n"
 #define RUR_UNR "RUR UNR\n"
 
+#define LST_REQ "LST\n"
+#define LST_SIZE (CMD_SIZE + 1)
+#define RLS_OK "RLS OK "
+#define RLS_OK_SIZE 7
+#define RLS_NOK "RLS NOK\n"
+
 // LIN UID(6-numeric) password(8-alphanumeric)\n
 char *login_req(char *uid, char *password);
 bool login_res(char *response, bool print);
@@ -35,5 +44,8 @@ bool logout_res(char *response, bool print);
 
 char *unregister_req(char *uid, char *password);
 bool unregister_res(char *response, bool print);
+
+char *list_req();
+void list_res(char *response, bool print);
 
 #endif

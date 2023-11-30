@@ -10,13 +10,14 @@
 #include <unistd.h>
 
 // TODO: test connection protocols
-char *use_udp(char *ip_addr, char *port, char *msg, int size) {
+char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
+              int receive_size) {
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
-    char *buffer = (char *)malloc(128 * sizeof(char));
+    char *buffer = (char *)malloc((receive_size + 1) * sizeof(char));
 
     // setup socket
     fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -34,15 +35,17 @@ char *use_udp(char *ip_addr, char *port, char *msg, int size) {
         exit(1);
 
     // send
-    n = sendto(fd, msg, size, 0, res->ai_addr, res->ai_addrlen);
+    n = sendto(fd, msg, msg_size, 0, res->ai_addr, res->ai_addrlen);
     if (n == -1)
         exit(1);
 
     // receive
     addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
+    n = recvfrom(fd, buffer, receive_size, 0, (struct sockaddr *)&addr,
+                 &addrlen);
     if (n == -1)
         exit(1);
+    buffer[n] = '\0';
 
     freeaddrinfo(res);
     close(fd);

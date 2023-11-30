@@ -35,7 +35,7 @@ void login(char *uid, char *password) {
     }
 
     request = login_req(uid, password);
-    response = use_udp(asip, asport, request, LIN_SIZE);
+    response = use_udp(asip, asport, request, LIN_SIZE, RECV_SIZE_DEFAULT);
 
     ok = login_res(response, true);
     if (!ok) {
@@ -67,7 +67,7 @@ void logout() {
     }
 
     request = logout_req(user.uid, user.password);
-    response = use_udp(asip, asport, request, LOU_SIZE);
+    response = use_udp(asip, asport, request, LOU_SIZE, RECV_SIZE_DEFAULT);
 
     ok = logout_res(response, true);
     if (!ok) {
@@ -97,7 +97,7 @@ void unregister() {
     }
 
     request = unregister_req(user.uid, user.password);
-    response = use_udp(asip, asport, request, UNR_SIZE);
+    response = use_udp(asip, asport, request, UNR_SIZE, RECV_SIZE_DEFAULT);
 
     ok = unregister_res(response, true);
     if (!ok) {
@@ -134,7 +134,17 @@ void myauctions() {}
 
 void mybids() {}
 
-void list() {}
+void list() {
+    char *request, *response;
+
+    request = list_req();
+    response = use_udp(asip, asport, request, LST_SIZE, RECV_SIZE_LST);
+    list_res(response, true);
+
+    free(request);
+    free(response);
+    return;
+}
 
 void show_asset(char *aid) {}
 
