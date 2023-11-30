@@ -35,7 +35,7 @@ void login(char *uid, char *password) {
     }
 
     request = login_req(uid, password);
-    response = use_udp(asip, asport, request, LOGIN_MSG_SIZE);
+    response = use_udp(asip, asport, request, LIN_SIZE);
 
     ok = login_res(response, true);
     if (!ok) {
@@ -67,7 +67,7 @@ void logout() {
     }
 
     request = logout_req(user.uid, user.password);
-    response = use_udp(asip, asport, request, LOGOUT_MSG_SIZE);
+    response = use_udp(asip, asport, request, LOU_SIZE);
 
     ok = logout_res(response, true);
     if (!ok) {
@@ -76,6 +76,7 @@ void logout() {
         return;
     }
 
+    // TODO: should we logout if logout goes wrong?
     // clear current uid and password
     memset(user.uid, 0, sizeof(user.uid));
     memset(user.password, 0, sizeof(user.password));
@@ -86,11 +87,39 @@ void logout() {
     return;
 }
 
-void unregister() {}
+void unregister() {
+    char *request, *response;
+    bool ok;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = unregister_req(user.uid, user.password);
+    response = use_udp(asip, asport, request, UNR_SIZE);
+
+    ok = unregister_res(response, true);
+    if (!ok) {
+        free(request);
+        free(response);
+        return;
+    }
+
+    // TODO: should we logout if unregistered goes wrong?
+    // clear current uid and password
+    memset(user.uid, 0, sizeof(user.uid));
+    memset(user.password, 0, sizeof(user.password));
+    user.logged_in = false;
+
+    free(request);
+    free(response);
+    return;
+}
 
 bool exit_prompt() {
     if (user.logged_in) {
-        printf("please logout first\n");
+        printf("error: please logout first\n");
         return false;
     }
     return true;

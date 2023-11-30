@@ -8,17 +8,23 @@
 
 #define CMD_SIZE 3
 
-#define LOGIN_CMD "LIN "
-#define LOGIN_MSG_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
-#define LOGIN_RES_OK "RLI OK\n"
-#define LOGIN_RES_NOK "RLI NOK\n"
-#define LOGIN_RES_REG "RLI REG\n"
+#define LIN_REQ "LIN "
+#define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define RLI_OK "RLI OK\n"
+#define RLI_NOK "RLI NOK\n"
+#define RLI_REG "RLI REG\n"
 
-#define LOGOUT_CMD "LOU "
-#define LOGOUT_MSG_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
-#define LOGOUT_RES_OK "RLO OK\n"
-#define LOGOUT_RES_NOK "RLO NOK\n"
-#define LOGOUT_RES_UNR "RLO UNR\n"
+#define LOU_REQ "LOU "
+#define LOU_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define RLO_OK "RLO OK\n"
+#define RLO_NOK "RLO NOK\n"
+#define RLO_UNR "RLO UNR\n"
+
+#define UNR_REQ "UNR "
+#define UNR_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define RUR_OK "RUR OK\n"
+#define RUR_NOK "RUR NOK\n"
+#define RUR_UNR "RUR UNR\n"
 
 // LIN UID(6-numeric) password(8-alphanumeric)\n
 char *login_req(char *uid, char *password);
@@ -26,5 +32,8 @@ bool login_res(char *response, bool print);
 
 char *logout_req(char *uid, char *password);
 bool logout_res(char *response, bool print);
+
+char *unregister_req(char *uid, char *password);
+bool unregister_res(char *response, bool print);
 
 #endif
