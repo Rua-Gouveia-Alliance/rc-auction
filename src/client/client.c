@@ -88,6 +88,14 @@ void logout() {
 
 void unregister() {}
 
+bool exit_prompt() {
+    if (user.logged_in) {
+        printf("please logout first\n");
+        return false;
+    }
+    return true;
+}
+
 void open_auc(char *name, char *asset_fname, char *start_value,
               char *timeactive) {}
 
@@ -147,7 +155,7 @@ bool prompt_command(char *command) {
             printf("error: incorrect number of arguments\n");
             return false;
         }
-        return true;
+        return exit_prompt();
     } else if (strcmp(prompt_args[0], "open") == 0) {
         if (arg_count != 5) {
             printf("error: incorrect number of arguments\n");
