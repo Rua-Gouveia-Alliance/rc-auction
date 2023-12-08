@@ -157,7 +157,7 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     read_word(fd, file_size);
     
     int file_bytes = atoi(file_size);
-    int file = open(file_name, O_CREAT | O_WRONLY);
+    int file = open(file_name, O_CREAT | O_WRONLY, 0666);
     
     while (read_bytes < file_bytes) {
         n = read(fd, buffer, PACKET_SIZE);
