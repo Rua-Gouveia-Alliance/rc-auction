@@ -52,13 +52,13 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     return buffer;
 }
 
-char *use_tcp(char *ip_addr, char *port, char *msg, int size) {
+char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size, int receive_size) {
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
-    char *buffer = (char *)malloc(128 * sizeof(char));
+    char *buffer = (char *)malloc((receive_size + 1) * sizeof(char));
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
     if (fd == -1)
@@ -76,7 +76,7 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int size) {
     if (n == -1) /*error*/
         exit(1);
 
-    n = write(fd, msg, size);
+    n = write(fd, msg, msg_size);
     if (n == -1) /*error*/
         exit(1);
 
