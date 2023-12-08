@@ -22,15 +22,16 @@ char *login_req(char *uid, char *password) {
 }
 
 bool login_res(char *response, bool print) {
-    if (strcmp(response, RLI_OK) == 0) {
+    char* status = response + 4;
+    if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("login successful\n");
         return true;
-    } else if (strcmp(response, RLI_NOK) == 0) {
+    } else if (strcmp(status, STATUS_NOK) == 0) {
         if (print)
             printf("wrong password\n");
         return false;
-    } else if (strcmp(response, RLI_REG) == 0) {
+    } else if (strcmp(status, STATUS_REG) == 0) {
         if (print)
             printf("new user registered\nlogin successful\n");
         return true;
@@ -57,15 +58,16 @@ char *logout_req(char *uid, char *password) {
 }
 
 bool logout_res(char *response, bool print) {
-    if (strcmp(response, RLO_OK) == 0) {
+    char* status = response + 4;
+    if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("logout successful\n");
         return true;
-    } else if (strcmp(response, RLO_NOK) == 0) {
+    } else if (strcmp(status, STATUS_NOK) == 0) {
         if (print)
             printf("error: user not logged in\n");
         return false;
-    } else if (strcmp(response, RLO_UNR) == 0) {
+    } else if (strcmp(status, STATUS_UNR) == 0) {
         if (print)
             printf("error: user not registered\n");
         return true;
@@ -92,15 +94,16 @@ char *unregister_req(char *uid, char *password) {
 }
 
 bool unregister_res(char *response, bool print) {
-    if (strcmp(response, RUR_OK) == 0) {
+    char* status = response + 4;
+    if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("unregister successful\n");
         return true;
-    } else if (strcmp(response, RUR_NOK) == 0) {
+    } else if (strcmp(status, STATUS_NOK) == 0) {
         if (print)
             printf("error: user not logged in\n");
         return false;
-    } else if (strcmp(response, RUR_UNR) == 0) {
+    } else if (strcmp(status, STATUS_UNR) == 0) {
         if (print)
             printf("error: user not registered\n");
         return true;
@@ -124,6 +127,7 @@ char *list_req() {
 void list_res(char *response, bool print) {
     int last_pos;
     char *token, *list_pos;
+    char *status = response + 4;
 
     last_pos = strlen(response) - 1;
     if (strncmp(response, RLS_OK, RLS_OK_SIZE) == 0) {
@@ -161,11 +165,61 @@ void list_res(char *response, bool print) {
             // next token
             token = strtok(NULL, " ");
         }
-    } else if (strcmp(response, RLS_NOK) == 0) {
+    } else if (strcmp(status, STATUS_NOK) == 0) {
         if (print)
             printf("no auctions started yet\n");
     } else {
         if (print)
             printf("error: wrong server response format\n");
+    }
+}
+
+char* close_req(char* uid, char* password, char* aid) {
+    // setup buffer
+    char *msg = malloc((CLS_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (CLS_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, CLS_REQ);
+    strcpy(&msg[CMD_SIZE + 1], uid);
+    msg[CMD_SIZE + 1 + UID_SIZE] = ' ';
+    strcpy(&msg[CMD_SIZE + 1 + UID_SIZE + 1], password);
+    msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = ' ';
+    strcpy(&msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1], aid);
+    msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE] = '\n';
+
+    return msg;
+}
+
+bool close_res(char *response, bool print) {
+    char* status = response + 4;
+    if (strcmp(status, STATUS_OK) == 0) {
+        if (print)
+            printf("close successful\n");
+        return true;
+    } else if (strcmp(status, STATUS_NOK) == 0) {
+        if (print)
+            printf("error: user doesn't exist or wrong password\n");
+        return false;
+    } else if (strcmp(status, STATUS_NLG) == 0) {
+        if (print)
+            printf("error: user not logged in\n");
+        return false;
+    } else if (strcmp(status, STATUS_EAU) == 0) {
+        if (print)
+            printf("error: auction does not exist\n");
+        return false;
+    } else if (strcmp(status, STATUS_EOW) == 0) {
+        if (print)
+            printf("error: auction not owned\n");
+        return false;
+    } else if (strcmp(status, STATUS_END) == 0) {
+        if (print)
+            printf("error: auction has already finished\n");
+        return false;
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
     }
 }
