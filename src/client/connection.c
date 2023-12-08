@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 // TODO: test connection protocols
 char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
@@ -181,4 +182,64 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     close(file);
 
     return true;
+}
+
+char* send_file(char *ip_addr, char *port, char *msg, int msg_size, char* filename, int receive_size) {
+    int fd, errcode, written_bytes = 0;
+    ssize_t n;
+    socklen_t addrlen;
+    struct sockaddr_in addr;
+    struct addrinfo hints, *res;
+    char *buffer = (char *)malloc(PACKET_SIZE);
+    char *response = (char *)malloc((receive_size + 1) * sizeof(char));
+
+    fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
+    if (fd == -1)
+        exit(EXIT_FAILURE); // error
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;       // IPv4
+    hints.ai_socktype = SOCK_STREAM; // TCP socket
+
+    errcode = getaddrinfo(ip_addr, port, &hints, &res);
+    if (errcode != 0) /*error*/
+        exit(EXIT_FAILURE);
+
+    n = connect(fd, res->ai_addr, res->ai_addrlen);
+    if (n == -1) /*error*/
+        exit(EXIT_FAILURE);
+
+    n = write(fd, msg, msg_size);
+    if (n == -1) /*error*/
+        exit(EXIT_FAILURE);
+    
+    int file = open(filename, O_RDONLY);
+    struct stat st;
+    int failed = fstat(file, &st);
+    if (failed)
+        exit(EXIT_FAILURE);
+    int file_bytes = st.st_size;
+    while (written_bytes < file_bytes) {
+        n = read(file, buffer, PACKET_SIZE);
+        if (n == -1) /*error*/
+            exit(EXIT_FAILURE);
+
+        n = write(fd, buffer, PACKET_SIZE);
+        if (n == -1) /*error*/
+            exit(EXIT_FAILURE);
+
+        written_bytes += PACKET_SIZE;
+    }
+
+    n = read(fd, response, receive_size);
+    if (n == -1) /*error*/
+        exit(1);
+
+    free(buffer);
+
+    freeaddrinfo(res);
+    close(fd);
+    close(file);
+
+    return response;
 }

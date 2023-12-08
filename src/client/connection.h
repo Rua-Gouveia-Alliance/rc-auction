@@ -11,4 +11,6 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size, int receive_si
 
 bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size);
 
+char* send_file(char *ip_addr, char *port, char *msg, int msg_size, char* filename, int receive_size);
+
 #endif

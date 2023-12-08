@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 static char asip[128] = "127.0.0.1";
 static char asport[6] = "58012"; // 58000 + group number
@@ -125,8 +127,70 @@ bool exit_prompt() {
     return true;
 }
 
-void open_auc(char *name, char *asset_fname, char *start_value,
-              char *timeactive) {}
+void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive) {
+    int fd;
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+    
+    if (strlen(name) > NAME_SIZE) {
+        printf("error: name is too big\n");
+        return;
+    }
+
+    if (strlen(asset_fname) > FNAME_SIZE) {
+        printf("error: file name is too big\n");
+        return;
+    }
+
+    if (strlen(start_value) > START_VAL_SIZE) {
+        printf("error: start value is too big\n");
+        return;
+    }
+
+    if (strlen(start_value) > DUR_SIZE) {
+        printf("error: auction duration is too big\n");
+        return;
+    }
+    
+    fd = open(asset_fname, O_RDONLY);
+    if (fd == -1) {
+        printf("error: failed to open file\n");
+        return;
+    }
+
+    struct stat st;
+    int failed = fstat(fd, &st);
+    if (failed) {
+        printf("error: failed to get file size\n");
+        close(fd);
+        return;
+    }
+    int file_bytes = st.st_size;
+    char *fsize = (char*) malloc(FSIZE_SIZE * sizeof(char));
+    sprintf(fsize, "%d", file_bytes);
+    
+    if (strlen(fsize) > FSIZE_SIZE) {
+        printf("error: file is too big\n");
+        close(fd);
+        free(fsize);
+        return;
+    }
+
+    request = opa_req(user.uid, user.password, name, start_value, timeactive, asset_fname, fsize);
+    response = send_file(asip, asport, request, OPA_SIZE, asset_fname, RECV_SIZE_DEFAULT);
+
+    opa_res(response, true);
+
+    close(fd);
+    free(fsize);
+    free(request);
+    free(response);
+    return;
+}
 
 void close_auc(char *aid) {
     char *request, *response;

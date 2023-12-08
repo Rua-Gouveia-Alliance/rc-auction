@@ -271,6 +271,29 @@ bool bid_res(char *response, bool print) {
     }
 }
 
+char* opa_req(char* uid, char* password, char* name, char* start_value, char* timeactive, char* fname, char* fsize) {
+    // setup buffer
+    char *msg = malloc((OPA_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (OPA_SIZE + 1) * sizeof(char));
+
+    // copy data
+    sprintf(msg, "%s %s %s %s %s %s %s ", uid, password, name, start_value, timeactive, fname, fsize);
+
+    return msg;
+}
+
+bool opa_res(char *response, bool print) {
+    char* status = response + 4;
+    if (strncmp(status, STATUS_NOK, 3) == 0) {
+        if (print)
+            printf("failed to open auction\n");
+        return false;
+    }
+    if (print)
+        printf("opened auction with AID %s\n", status + 3);
+    return true;
+}
+
 char* sas_req(char* aid) {
     // setup buffer
     char *msg = malloc((SAS_SIZE + 1) * sizeof(char));

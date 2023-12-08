@@ -6,6 +6,12 @@
 #define UID_SIZE 6
 #define PASS_SIZE 8
 #define AID_SIZE 3
+#define NAME_SIZE 10
+#define START_VAL_SIZE 6
+#define DUR_SIZE 5
+#define FNAME_SIZE 24
+#define FSIZE_SIZE 8
+#define FILE_BYTES 10000000
 
 #define RECV_SIZE_DEFAULT 128
 #define RECV_SIZE_LST (6 * 1024)
@@ -34,6 +40,9 @@
 
 #define SAS_REQ "SAS "
 #define SAS_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
+
+#define OPA_REQ "OPA "
+#define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"
@@ -67,5 +76,8 @@ char* bid_req(char* uid, char* password, char* aid, char* value);
 bool bid_res(char *response, bool print);
 
 char* sas_req(char* aid);
+
+char* opa_req(char* uid, char* password, char* name, char* start_value, char* timeactive, char* fname, char* fsize);
+bool opa_res(char *response, bool print);
 
 #endif
