@@ -270,3 +270,16 @@ bool bid_res(char *response, bool print) {
         return false;
     }
 }
+
+char* sas_req(char* aid) {
+    // setup buffer
+    char *msg = malloc((SAS_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (SAS_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, SAS_REQ);
+    strcpy(&msg[CMD_SIZE + 1], aid);
+    msg[CMD_SIZE + 1 + AID_SIZE] = '\n';
+
+    return msg;
+}

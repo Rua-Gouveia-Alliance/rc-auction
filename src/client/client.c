@@ -163,7 +163,19 @@ void list() {
     return;
 }
 
-void show_asset(char *aid) {}
+void show_asset(char *aid) {
+    bool ok;
+    char *request;
+
+    request = sas_req(aid);
+    ok = transfer_file(asip, asport, request, SAS_SIZE);
+
+    if(!ok)
+        printf("error: auction server couldn't send the image\n");
+    
+    free(request);
+    return;
+}
 
 void bid(char *aid, char *value) {
     int val_size = strlen(value);

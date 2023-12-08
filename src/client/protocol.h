@@ -32,6 +32,9 @@
 #define BID_REQ "BID "
 #define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 
+#define SAS_REQ "SAS "
+#define SAS_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
+
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"
 #define STATUS_REG "REG\n"
@@ -62,5 +65,7 @@ bool close_res(char* response, bool print);
 
 char* bid_req(char* uid, char* password, char* aid, char* value);
 bool bid_res(char *response, bool print);
+
+char* sas_req(char* aid);
 
 #endif
