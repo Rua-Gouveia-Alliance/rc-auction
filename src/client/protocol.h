@@ -29,6 +29,9 @@
 #define CLS_REQ "CLS "
 #define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE)
 
+#define BID_REQ "BID "
+#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE)
+
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"
 #define STATUS_REG "REG\n"
@@ -37,6 +40,9 @@
 #define STATUS_EAU "EAU\n"
 #define STATUS_EOW "EOW\n"
 #define STATUS_END "END\n"
+#define STATUS_ACC "ACC\n"
+#define STATUS_REF "REF\n"
+#define STATUS_ILG "ILG\n"
 
 // LIN UID(6-numeric) password(8-alphanumeric)\n
 char *login_req(char *uid, char *password);
@@ -53,5 +59,8 @@ void list_res(char *response, bool print);
 
 char* close_req(char* uid, char* password, char* aid);
 bool close_res(char* response, bool print);
+
+char* bid_req(char* uid, char* password, char* aid, char* value);
+bool bid_res(char *response, bool print);
 
 #endif

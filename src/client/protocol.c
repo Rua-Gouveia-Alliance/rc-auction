@@ -223,3 +223,50 @@ bool close_res(char *response, bool print) {
         return false;
     }
 }
+
+char* bid_req(char* uid, char* password, char* aid, char* value) {
+    // getting value size, needed for buffer
+    int val_size = strlen(value);
+
+    // setup buffer
+    char *msg = malloc((BID_SIZE + 1 + val_size + 1) * sizeof(char));
+    memset(msg, 0, (BID_SIZE+ 1 + val_size + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, BID_REQ);
+    strcpy(&msg[CMD_SIZE + 1], uid);
+    msg[CMD_SIZE + 1 + UID_SIZE] = ' ';
+    strcpy(&msg[CMD_SIZE + 1 + UID_SIZE + 1], password);
+    msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = ' ';
+    strcpy(&msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1], aid);
+    msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE] = ' ';
+    strcpy(&msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1], value);
+    msg[CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1 + val_size] = '\n';
+
+    return msg;
+}
+
+bool bid_res(char *response, bool print) {
+    char* status = response + 4;
+    if (strcmp(status, STATUS_ACC) == 0) {
+        if (print)
+            printf("bid successful\n");
+        return true;
+    } else if (strcmp(status, STATUS_NOK) == 0) {
+        if (print)
+            printf("error: auction not active\n");
+        return false;
+    } else if (strcmp(status, STATUS_REF) == 0) {
+        if (print)
+            printf("error: bid refused, there's a bigger bid already\n");
+        return false;
+    } else if (strcmp(status, STATUS_ILG) == 0) {
+        if (print)
+            printf("error: can't bid on own auction\n");
+        return false;
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    }
+}

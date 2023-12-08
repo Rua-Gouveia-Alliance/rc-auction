@@ -141,6 +141,10 @@ void close_auc(char *aid) {
     response = use_tcp(asip, asport, request, CLS_SIZE, RECV_SIZE_DEFAULT);
 
     close_res(response, true);
+
+    free(request);
+    free(response);
+    return;
 }
 
 void myauctions() {}
@@ -161,7 +165,24 @@ void list() {
 
 void show_asset(char *aid) {}
 
-void bid(char *aid, char *value) {}
+void bid(char *aid, char *value) {
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = bid_req(user.uid, user.password, aid, value);
+    // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
+    response = use_tcp(asip, asport, request, BID_SIZE, RECV_SIZE_DEFAULT);
+
+    bid_res(response, true);
+
+    free(request);
+    free(response);
+    return;
+}
 
 void show_record(char *aid) {}
 
