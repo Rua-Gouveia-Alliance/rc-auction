@@ -166,6 +166,7 @@ void list() {
 void show_asset(char *aid) {}
 
 void bid(char *aid, char *value) {
+    int val_size = strlen(value);
     char *request, *response;
 
     if (!user.logged_in) {
@@ -175,7 +176,7 @@ void bid(char *aid, char *value) {
 
     request = bid_req(user.uid, user.password, aid, value);
     // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
-    response = use_tcp(asip, asport, request, BID_SIZE, RECV_SIZE_DEFAULT);
+    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1, RECV_SIZE_DEFAULT);
 
     bid_res(response, true);
 

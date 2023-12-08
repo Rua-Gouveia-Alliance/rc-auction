@@ -27,10 +27,10 @@
 #define RLS_OK_SIZE 7
 
 #define CLS_REQ "CLS "
-#define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE)
+#define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 
 #define BID_REQ "BID "
-#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE)
+#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"

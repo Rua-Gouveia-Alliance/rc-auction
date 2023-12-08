@@ -229,8 +229,8 @@ char* bid_req(char* uid, char* password, char* aid, char* value) {
     int val_size = strlen(value);
 
     // setup buffer
-    char *msg = malloc((BID_SIZE + 1 + val_size + 1) * sizeof(char));
-    memset(msg, 0, (BID_SIZE+ 1 + val_size + 1) * sizeof(char));
+    char *msg = malloc((BID_SIZE + val_size + 1) * sizeof(char));
+    memset(msg, 0, (BID_SIZE + val_size + 1) * sizeof(char));
 
     // copy data
     strcpy(msg, BID_REQ);
