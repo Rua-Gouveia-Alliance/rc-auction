@@ -5,3 +5,4 @@ server
 !client/
 !server/
 src/.vscode/
+.vscode/
