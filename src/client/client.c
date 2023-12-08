@@ -128,7 +128,20 @@ bool exit_prompt() {
 void open_auc(char *name, char *asset_fname, char *start_value,
               char *timeactive) {}
 
-void close_auc(char *aid) {}
+void close_auc(char *aid) {
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = close_req(user.uid, user.password, aid);
+    // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
+    response = use_tcp(asip, asport, request, CLS_SIZE, RECV_SIZE_DEFAULT);
+
+    close_res(response, true);
+}
 
 void myauctions() {}
 
