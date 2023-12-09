@@ -11,12 +11,12 @@
 #define DUR_SIZE 5
 #define FNAME_SIZE 24
 #define FSIZE_SIZE 8
-#define FILE_BYTES 10000000
 
 #define RECV_SIZE_DEFAULT 128
 #define RECV_SIZE_LST (6 * 1024)
 
 #define CMD_SIZE 3
+#define STATUS_OK_SIZE 7
 
 #define LIN_REQ "LIN "
 #define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
@@ -30,10 +30,17 @@
 #define UNR_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define UNR_RES "RUR"
 
+#define LMA_REQ "LMA "
+#define LMA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
+#define LMA_RES "RMA"
+
+#define LMB_REQ "LMB "
+#define LMB_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
+#define LMB_RES "RMB"
+
 #define LST_REQ "LST\n"
 #define LST_SIZE (CMD_SIZE + 1)
 #define RLS_OK "RLS OK "
-#define RLS_OK_SIZE 7
 
 #define CLS_REQ "CLS "
 #define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)

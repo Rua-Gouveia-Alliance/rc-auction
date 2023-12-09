@@ -129,6 +129,108 @@ bool unregister_res(char *response, bool print) {
     }
 }
 
+void print_list(char* response) {
+    int last_pos;
+    char *token, *list_pos;
+
+    // check \n
+    last_pos = strlen(response) - 1;
+    if (response[last_pos] != '\n') {
+            printf("error: wrong server response format\n");
+        return;
+    }
+    response[last_pos] = '\0'; // replace \n with \0
+
+    list_pos = response + STATUS_OK_SIZE;
+    token = strtok(list_pos, " ");
+    while (token != NULL) {
+        // AID
+        if (strlen(token) != 3 || !is_numeric(token)) {
+                printf("error: wrong server response format\n");
+            return;
+        }
+            printf("%s", token);
+
+        // status
+        token = strtok(NULL, " ");
+        if (token == NULL || strlen(token) != 1 ||
+            (*token != '0' && *token != '1')) {
+                printf("error: wrong server response format\n");
+            return;
+        }
+            printf(" (%s)\n", *token == '1' ? "active" : "inactive");
+
+        // next token
+        token = strtok(NULL, " ");
+    }
+}
+
+char *lmb_req(char* uid) {
+    // setup buffer
+    char *msg = malloc((LMA_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (LMA_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, LMB_REQ);
+    strcpy(&msg[CMD_SIZE + 1], uid);
+    msg[CMD_SIZE + 1 + UID_SIZE] = '\n';
+    return msg;
+}
+
+void lmb_res(char* response, bool print) {
+    char *status = response + 4;
+
+    if (strncmp(response, LMB_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+    } else if (strncmp(status, STATUS_OK, 2) == 0) {
+        if (print)
+            print_list(response);
+    } else if (strcmp(status, STATUS_NOK) == 0) {
+        if (print)
+            printf("user has no ongoing bids\n");
+    } else if (strcmp(status, STATUS_NLG) == 0) {
+        if (print)
+            printf("user is not logged in\n");
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
+    }
+}
+
+char *lma_req(char* uid) {
+    // setup buffer
+    char *msg = malloc((LMA_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (LMA_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, LMA_REQ);
+    strcpy(&msg[CMD_SIZE + 1], uid);
+    msg[CMD_SIZE + 1 + UID_SIZE] = '\n';
+    return msg;
+}
+
+void lma_res(char* response, bool print) {
+    char *status = response + 4;
+
+    if (strncmp(response, LMA_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+    } else if (strncmp(status, STATUS_OK, 2) == 0) {
+        if (print)
+            print_list(response);
+    } else if (strcmp(status, STATUS_NOK) == 0) {
+        if (print)
+            printf("user has no ongoing auctions\n");
+    } else if (strcmp(status, STATUS_NLG) == 0) {
+        if (print)
+            printf("user is not logged in\n");
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
+    }
+}
+
 char *list_req() {
     // setup buffer
     char *msg = malloc((LST_SIZE + 1) * sizeof(char));
@@ -140,46 +242,11 @@ char *list_req() {
 }
 
 void list_res(char *response, bool print) {
-    int last_pos;
-    char *token, *list_pos;
     char *status = response + 4;
 
-    last_pos = strlen(response) - 1;
-    if (strncmp(response, RLS_OK, RLS_OK_SIZE) == 0) {
-        // check \n
-        if (response[last_pos] != '\n') {
-            if (print)
-                printf("error: wrong server response format\n");
-            return;
-        }
-        response[last_pos] = '\0'; // replace \n with \0
-
-        list_pos = response + RLS_OK_SIZE;
-        token = strtok(list_pos, " ");
-        while (token != NULL) {
-            // AID
-            if (strlen(token) != 3 || !is_numeric(token)) {
-                if (print)
-                    printf("error: wrong server response format\n");
-                return;
-            }
-            if (print)
-                printf("%s", token);
-
-            // status
-            token = strtok(NULL, " ");
-            if (token == NULL || strlen(token) != 1 ||
-                (*token != '0' && *token != '1')) {
-                if (print)
-                    printf("error: wrong server response format\n");
-                return;
-            }
-            if (print)
-                printf(" (%s)\n", *token == '1' ? "active" : "inactive");
-
-            // next token
-            token = strtok(NULL, " ");
-        }
+    if (strncmp(response, RLS_OK, STATUS_OK_SIZE) == 0) {
+        if (print)
+            print_list(response);
     } else if (strcmp(status, STATUS_NOK) == 0) {
         if (print)
             printf("no auctions started yet\n");

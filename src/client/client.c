@@ -211,9 +211,39 @@ void close_auc(char *aid) {
     return;
 }
 
-void myauctions() {}
+void myauctions() {
+    char *request, *response;
 
-void mybids() {}
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = lma_req(user.uid);
+    response = use_udp(asip, asport, request, LMA_SIZE, RECV_SIZE_LST);
+    lma_res(response, true);
+
+    free(request);
+    free(response);
+    return;
+}
+
+void mybids() {
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = lmb_req(user.uid);
+    response = use_udp(asip, asport, request, LMB_SIZE, RECV_SIZE_LST);
+    lmb_res(response, true);
+
+    free(request);
+    free(response);
+    return;
+}
 
 void list() {
     char *request, *response;
