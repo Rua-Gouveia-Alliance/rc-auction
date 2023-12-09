@@ -143,7 +143,7 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     
     status[6] = '\0';
 
-    if (strcmp(status + 4, "OK") != 0) {
+    if (strcmp(status + 4, "OK") != 0 || strncmp(status, "RSA", 3) != 0) {
         free(status);
         free(file_name);
         free(file_size);

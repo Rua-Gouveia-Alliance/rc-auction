@@ -23,7 +23,12 @@ char *login_req(char *uid, char *password) {
 
 bool login_res(char *response, bool print) {
     char* status = response + 4;
-    if (strcmp(status, STATUS_OK) == 0) {
+
+    if (strncmp(response, LIN_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("login successful\n");
         return true;
@@ -59,7 +64,12 @@ char *logout_req(char *uid, char *password) {
 
 bool logout_res(char *response, bool print) {
     char* status = response + 4;
-    if (strcmp(status, STATUS_OK) == 0) {
+
+    if (strncmp(response, LOU_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("logout successful\n");
         return true;
@@ -95,7 +105,12 @@ char *unregister_req(char *uid, char *password) {
 
 bool unregister_res(char *response, bool print) {
     char* status = response + 4;
-    if (strcmp(status, STATUS_OK) == 0) {
+
+    if (strncmp(response, UNR_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("unregister successful\n");
         return true;
@@ -193,7 +208,12 @@ char* close_req(char* uid, char* password, char* aid) {
 
 bool close_res(char *response, bool print) {
     char* status = response + 4;
-    if (strcmp(status, STATUS_OK) == 0) {
+
+    if (strncmp(response, CLS_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strcmp(status, STATUS_OK) == 0) {
         if (print)
             printf("close successful\n");
         return true;
@@ -248,7 +268,12 @@ char* bid_req(char* uid, char* password, char* aid, char* value) {
 
 bool bid_res(char *response, bool print) {
     char* status = response + 4;
-    if (strcmp(status, STATUS_ACC) == 0) {
+
+    if (strncmp(response, BID_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strcmp(status, STATUS_ACC) == 0) {
         if (print)
             printf("bid successful\n");
         return true;
@@ -284,7 +309,12 @@ char* opa_req(char* uid, char* password, char* name, char* start_value, char* ti
 
 bool opa_res(char *response, bool print) {
     char* status = response + 4;
-    if (strncmp(status, STATUS_NOK, 3) == 0) {
+
+    if (strncmp(response, OPA_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+        return false;
+    } else if (strncmp(status, STATUS_NOK, 3) == 0) {
         if (print)
             printf("failed to open auction\n");
         return false;

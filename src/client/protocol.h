@@ -20,12 +20,15 @@
 
 #define LIN_REQ "LIN "
 #define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define LIN_RES "RLI"
 
 #define LOU_REQ "LOU "
 #define LOU_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define LOU_RES "RLO"
 
 #define UNR_REQ "UNR "
 #define UNR_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define UNR_RES "RUR"
 
 #define LST_REQ "LST\n"
 #define LST_SIZE (CMD_SIZE + 1)
@@ -34,15 +37,19 @@
 
 #define CLS_REQ "CLS "
 #define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
+#define CLS_RES "RCL"
 
 #define BID_REQ "BID "
 #define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
+#define BID_RES "RBD"
 
 #define SAS_REQ "SAS "
 #define SAS_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
+#define SAS_RES "RSA"
 
 #define OPA_REQ "OPA "
 #define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
+#define OPA_RES "ROA"
 
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"
