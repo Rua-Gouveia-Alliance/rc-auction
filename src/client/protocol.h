@@ -80,6 +80,12 @@ bool logout_res(char *response, bool print);
 char *unregister_req(char *uid, char *password);
 bool unregister_res(char *response, bool print);
 
+char *lmb_req(char* uid);
+void lmb_res(char* response, bool print);
+
+char *lma_req(char* uid);
+void lma_res(char* response, bool print);
+
 char *list_req();
 void list_res(char *response, bool print);
 
