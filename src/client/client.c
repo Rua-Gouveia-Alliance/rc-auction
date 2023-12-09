@@ -2,14 +2,14 @@
 #include "../util.h"
 #include "connection.h"
 #include "protocol.h"
+#include <fcntl.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 static char asip[128] = "127.0.0.1";
 static char asport[6] = "58012"; // 58000 + group number
@@ -127,7 +127,8 @@ bool exit_prompt() {
     return true;
 }
 
-void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive) {
+void open_auc(char *name, char *asset_fname, char *start_value,
+              char *timeactive) {
     int fd;
     char *request, *response;
 
@@ -135,7 +136,7 @@ void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive
         printf("error: not logged in\n");
         return;
     }
-    
+
     if (strlen(name) > NAME_SIZE) {
         printf("error: name is too big\n");
         return;
@@ -155,7 +156,7 @@ void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive
         printf("error: auction duration is too big\n");
         return;
     }
-    
+
     fd = open(asset_fname, O_RDONLY);
     if (fd == -1) {
         printf("error: failed to open file\n");
@@ -170,9 +171,9 @@ void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive
         return;
     }
     int file_bytes = st.st_size;
-    char *fsize = (char*) malloc(FSIZE_SIZE * sizeof(char));
+    char *fsize = (char *)malloc(FSIZE_SIZE * sizeof(char));
     sprintf(fsize, "%d", file_bytes);
-    
+
     if (strlen(fsize) > FSIZE_SIZE) {
         printf("error: file is too big\n");
         close(fd);
@@ -180,8 +181,10 @@ void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive
         return;
     }
 
-    request = opa_req(user.uid, user.password, name, start_value, timeactive, asset_fname, fsize);
-    response = send_file(asip, asport, request, OPA_SIZE, asset_fname, RECV_SIZE_DEFAULT);
+    request = opa_req(user.uid, user.password, name, start_value, timeactive,
+                      asset_fname, fsize);
+    response = send_file(asip, asport, request, strlen(request), asset_fname,
+                         RECV_SIZE_DEFAULT);
 
     opa_res(response, true);
 
@@ -264,9 +267,9 @@ void show_asset(char *aid) {
     request = sas_req(aid);
     ok = transfer_file(asip, asport, request, SAS_SIZE);
 
-    if(!ok)
+    if (!ok)
         printf("error: auction server couldn't send the image\n");
-    
+
     free(request);
     return;
 }
@@ -282,7 +285,8 @@ void bid(char *aid, char *value) {
 
     request = bid_req(user.uid, user.password, aid, value);
     // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
-    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1, RECV_SIZE_DEFAULT);
+    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1,
+                       RECV_SIZE_DEFAULT);
 
     bid_res(response, true);
 

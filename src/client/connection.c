@@ -1,15 +1,15 @@
 #include "connection.h"
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 
 // TODO: test connection protocols
 char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
@@ -54,7 +54,8 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     return buffer;
 }
 
-char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size, int receive_size) {
+char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
+              int receive_size) {
     int fd, errcode;
     ssize_t n;
     socklen_t addrlen;
@@ -92,7 +93,7 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size, int receive_si
     return buffer;
 }
 
-void read_word(int fd, char* buffer) {
+void read_word(int fd, char *buffer) {
     char c;
     int i = 0;
     ssize_t n;
@@ -102,7 +103,7 @@ void read_word(int fd, char* buffer) {
         buffer[i++] = c;
         n = read(fd, &c, sizeof(char));
         if (n == -1)
-           exit(EXIT_FAILURE);
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -140,7 +141,7 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     n = read(fd, status, 7);
     if (n == -1) /*error*/
         exit(EXIT_FAILURE);
-    
+
     status[6] = '\0';
 
     if (strcmp(status + 4, "OK") != 0 || strncmp(status, "RSA", 3) != 0) {
@@ -156,20 +157,20 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
 
     read_word(fd, file_name);
     read_word(fd, file_size);
-    
+
     int file_bytes = atoi(file_size);
     int file = open(file_name, O_CREAT | O_WRONLY, 0666);
-    
+
     while (read_bytes < file_bytes) {
         n = read(fd, buffer, PACKET_SIZE);
         if (n == -1) /*error*/
             exit(EXIT_FAILURE);
 
-        n = write(file, buffer, PACKET_SIZE);
+        n = write(file, buffer, n);
         if (n == -1) /*error*/
             exit(EXIT_FAILURE);
 
-        read_bytes += PACKET_SIZE;
+        read_bytes += n;
     }
 
     free(status);
@@ -184,7 +185,8 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     return true;
 }
 
-char* send_file(char *ip_addr, char *port, char *msg, int msg_size, char* filename, int receive_size) {
+char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
+                char *filename, int receive_size) {
     int fd, errcode, written_bytes = 0;
     ssize_t n;
     socklen_t addrlen;
@@ -212,7 +214,7 @@ char* send_file(char *ip_addr, char *port, char *msg, int msg_size, char* filena
     n = write(fd, msg, msg_size);
     if (n == -1) /*error*/
         exit(EXIT_FAILURE);
-    
+
     int file = open(filename, O_RDONLY);
     struct stat st;
     int failed = fstat(file, &st);
@@ -220,15 +222,18 @@ char* send_file(char *ip_addr, char *port, char *msg, int msg_size, char* filena
         exit(EXIT_FAILURE);
     int file_bytes = st.st_size;
     while (written_bytes < file_bytes) {
+        memset(buffer, 0, PACKET_SIZE);
         n = read(file, buffer, PACKET_SIZE);
-        if (n == -1) /*error*/
+        if (n == -1) /*error*/ {
             exit(EXIT_FAILURE);
+        }
 
-        n = write(fd, buffer, PACKET_SIZE);
-        if (n == -1) /*error*/
+        n = write(fd, buffer, n);
+        if (n == -1) /*error*/ {
             exit(EXIT_FAILURE);
+        }
 
-        written_bytes += PACKET_SIZE;
+        written_bytes += n;
     }
 
     n = read(fd, response, receive_size);
