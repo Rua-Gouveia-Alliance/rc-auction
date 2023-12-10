@@ -198,6 +198,165 @@ void lmb_res(char *response, bool print) {
     }
 }
 
+void print_record(char* response) {
+    int last_pos;
+    char *token, *list_pos;
+
+    // check \n
+    last_pos = strlen(response) - 1;
+    if (response[last_pos] != '\n') {
+        printf("error: wrong server response format\n");
+        return;
+    }
+    response[last_pos] = '\0'; // replace \n with \0
+
+    list_pos = response + STATUS_OK_SIZE;
+    token = strtok(list_pos, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    // Printing auction related data
+    printf("\nHosted by: %s\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("Auction name: %s\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("File name: %s\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("Start value: %s\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("Start date: %s ", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("%s\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("error: wrong server response format\n");
+        return;
+    }
+
+    printf("Duration: %ss\n", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("\n");
+        return;
+    }
+
+    if (token[0] == 'B')
+        printf("\nBids:\n");
+    else
+        printf("\nNo bids were made\n");
+
+    while (token[0] == 'B') {
+        token = strtok(NULL, " ");
+
+        if (token == NULL) {
+            printf("\nerror: wrong server response format\n");
+            return;
+        }
+
+        printf("User %s ", token);
+        token = strtok(NULL, " ");
+
+        if (token == NULL) {
+            printf("\nerror: wrong server response format\n");
+            return;
+        }
+
+        printf("bid %s on ", token);
+        token = strtok(NULL, " ");
+
+        if (token == NULL) {
+            printf("\nerror: wrong server response format\n");
+            return;
+        }
+
+        printf("%s ", token);
+        token = strtok(NULL, " ");
+
+        if (token == NULL) {
+            printf("\nerror: wrong server response format\n");
+            return;
+        }
+
+        printf("%s ", token);
+        token = strtok(NULL, " ");
+
+        if (token == NULL) {
+            printf("\nerror: wrong server response format\n");
+            return;
+        }
+
+        printf("%ss\n", token);
+        token = strtok(NULL, " ");
+
+        if (token == NULL)
+            return;
+    }
+
+    if (token == NULL)
+        return;
+
+    printf("\n");
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("\nerror: wrong server response format\n");
+        return;
+    }
+
+    printf("This auction finished on %s, ", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("\nerror: wrong server response format\n");
+        return;
+    }
+
+    printf("%s and lasted ", token);
+    token = strtok(NULL, " ");
+
+    if (token == NULL) {
+        printf("\nerror: wrong server response format\n");
+        return;
+    }
+
+    printf("%ss\n\n", token);
+}
+
 char *src_req(char *aid) {
     // setup buffer
     char *msg = malloc((SRC_SIZE + 1) * sizeof(char));
@@ -208,6 +367,24 @@ char *src_req(char *aid) {
     strcpy(&msg[CMD_SIZE + 1], aid);
     msg[CMD_SIZE + 1 + AID_SIZE] = '\n';
     return msg;
+}
+
+void src_res(char *response, bool print) {
+    char *status = response + 4;
+
+    if (strncmp(response, SRC_RES, 3) != 0) {
+        if (print)
+            printf("error: wrong server response format\n");
+    } else if (strncmp(status, STATUS_OK, 2) == 0) {
+        if (print)
+            print_record(response);
+    } else if (strcmp(status, STATUS_NOK) == 0) {
+        if (print)
+            printf("the provided auction does not exist\n");
+    } else {
+        if (print)
+            printf("error: wrong server response format\n");
+    }
 }
 
 char *lma_req(char *uid) {

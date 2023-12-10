@@ -7,16 +7,16 @@
 #define PASS_SIZE 8
 #define AID_SIZE 3
 #define NAME_SIZE 10
-#define START_VAL_SIZE 6
+#define BID_VAL_SIZE 6
 #define DUR_SIZE 5
 #define FNAME_SIZE 24
 #define FSIZE_SIZE 8
 
 #define DEFAULT_SIZE 128
 #define AUCTION_LIST_SIZE (6 * 1024)
-#define AUCTION_START_SIZE (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE)
+#define AUCTION_START_SIZE (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + BID_VAL_SIZE + 1 + DUR_SIZE)
 #define AUCTION_END_SIZE (19)
-#define BID_INFO_SIZE (1 + 1 + UID_SIZE + 1 +)
+#define BID_INFO_SIZE (1 + 1 + UID_SIZE + 1 + BID_VAL_SIZE + 1 + 19 + 1 + 5)
 #define BID_LIST_SIZE (AUCTION_START_SIZE + 50*BID_INFO_SIZE + AUCTION_END_SIZE)
 
 #define CMD_SIZE 3
@@ -55,7 +55,7 @@
 #define CLS_RES "RCL"
 
 #define BID_REQ "BID "
-#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
+#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1 + BID_VAL_SIZE + 1)
 #define BID_RES "RBD"
 
 #define SAS_REQ "SAS "
@@ -63,7 +63,7 @@
 #define SAS_RES "RSA"
 
 #define OPA_REQ "OPA "
-#define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
+#define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + BID_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 #define OPA_RES "ROA"
 
 #define STATUS_OK "OK\n"

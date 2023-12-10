@@ -147,7 +147,7 @@ void open_auc(char *name, char *asset_fname, char *start_value,
         return;
     }
 
-    if (strlen(start_value) > START_VAL_SIZE) {
+    if (strlen(start_value) > BID_VAL_SIZE) {
         printf("error: start value is too big\n");
         return;
     }
@@ -273,7 +273,6 @@ void show_asset(char *aid) {
 }
 
 void bid(char *aid, char *value) {
-    int val_size = strlen(value);
     char *request, *response;
 
     if (!user.logged_in) {
@@ -281,8 +280,13 @@ void bid(char *aid, char *value) {
         return;
     }
 
+    if (strlen(value) > BID_VAL_SIZE) {
+        printf("error: bid exceeds max amount\n");
+        return;
+    }
+
     request = bid_req(user.uid, user.password, aid, value);
-    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1, DEFAULT_SIZE);
+    response = use_tcp(asip, asport, request, BID_SIZE, DEFAULT_SIZE);
 
     bid_res(response, true);
 
@@ -294,15 +298,10 @@ void bid(char *aid, char *value) {
 void show_record(char *aid) {
     char *request, *response;
 
-    if (!user.logged_in) {
-        printf("error: not logged in\n");
-        return;
-    }
-
     request = src_req(aid);
-    response = get_record(asip, asport, request, SRC_SIZE);
+    response = use_udp(asip, asport, request, SRC_SIZE, BID_LIST_SIZE);
 
-    bid_res(response, true);
+    src_res(response, true);
 
     free(request);
     free(response);
