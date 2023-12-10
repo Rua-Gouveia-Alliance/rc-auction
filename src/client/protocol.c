@@ -323,12 +323,11 @@ void print_record(char* response) {
         printf("%ss\n", token);
         token = strtok(NULL, " ");
 
-        if (token == NULL)
+        if (token == NULL){
+            printf("\n");
             return;
+        }
     }
-
-    if (token == NULL)
-        return;
 
     printf("\n");
     token = strtok(NULL, " ");
