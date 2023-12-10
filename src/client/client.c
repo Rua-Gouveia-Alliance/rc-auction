@@ -37,7 +37,7 @@ void login(char *uid, char *password) {
     }
 
     request = login_req(uid, password);
-    response = use_udp(asip, asport, request, LIN_SIZE, RECV_SIZE_DEFAULT);
+    response = use_udp(asip, asport, request, LIN_SIZE, DEFAULT_SIZE);
 
     ok = login_res(response, true);
     if (!ok) {
@@ -69,7 +69,7 @@ void logout() {
     }
 
     request = logout_req(user.uid, user.password);
-    response = use_udp(asip, asport, request, LOU_SIZE, RECV_SIZE_DEFAULT);
+    response = use_udp(asip, asport, request, LOU_SIZE, DEFAULT_SIZE);
 
     ok = logout_res(response, true);
     if (!ok) {
@@ -99,7 +99,7 @@ void unregister() {
     }
 
     request = unregister_req(user.uid, user.password);
-    response = use_udp(asip, asport, request, UNR_SIZE, RECV_SIZE_DEFAULT);
+    response = use_udp(asip, asport, request, UNR_SIZE, DEFAULT_SIZE);
 
     ok = unregister_res(response, true);
     if (!ok) {
@@ -183,8 +183,7 @@ void open_auc(char *name, char *asset_fname, char *start_value,
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
                       asset_fname, fsize);
-    response = send_file(asip, asport, request, strlen(request), asset_fname,
-                         RECV_SIZE_DEFAULT);
+    response = send_file(asip, asport, request, strlen(request), asset_fname, DEFAULT_SIZE);
 
     opa_res(response, true);
 
@@ -204,8 +203,7 @@ void close_auc(char *aid) {
     }
 
     request = close_req(user.uid, user.password, aid);
-    // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
-    response = use_tcp(asip, asport, request, CLS_SIZE, RECV_SIZE_DEFAULT);
+    response = use_tcp(asip, asport, request, CLS_SIZE, DEFAULT_SIZE);
 
     close_res(response, true);
 
@@ -223,7 +221,7 @@ void myauctions() {
     }
 
     request = lma_req(user.uid);
-    response = use_udp(asip, asport, request, LMA_SIZE, RECV_SIZE_LST);
+    response = use_udp(asip, asport, request, LMA_SIZE, AUCTION_LIST_SIZE);
     lma_res(response, true);
 
     free(request);
@@ -240,7 +238,7 @@ void mybids() {
     }
 
     request = lmb_req(user.uid);
-    response = use_udp(asip, asport, request, LMB_SIZE, RECV_SIZE_LST);
+    response = use_udp(asip, asport, request, LMB_SIZE, AUCTION_LIST_SIZE);
     lmb_res(response, true);
 
     free(request);
@@ -252,7 +250,7 @@ void list() {
     char *request, *response;
 
     request = list_req();
-    response = use_udp(asip, asport, request, LST_SIZE, RECV_SIZE_LST);
+    response = use_udp(asip, asport, request, LST_SIZE, AUCTION_LIST_SIZE);
     list_res(response, true);
 
     free(request);
@@ -284,9 +282,7 @@ void bid(char *aid, char *value) {
     }
 
     request = bid_req(user.uid, user.password, aid, value);
-    // TODO: este nome sqe nao faz sentido, rever esta parte do recvsize
-    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1,
-                       RECV_SIZE_DEFAULT);
+    response = use_tcp(asip, asport, request, BID_SIZE + val_size + 1, DEFAULT_SIZE);
 
     bid_res(response, true);
 
@@ -295,7 +291,23 @@ void bid(char *aid, char *value) {
     return;
 }
 
-void show_record(char *aid) {}
+void show_record(char *aid) {
+    char *request, *response;
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        return;
+    }
+
+    request = src_req(aid);
+    response = get_record(asip, asport, request, SRC_SIZE);
+
+    bid_res(response, true);
+
+    free(request);
+    free(response);
+    return;
+}
 
 bool prompt_command(char *command) {
     // split arguments

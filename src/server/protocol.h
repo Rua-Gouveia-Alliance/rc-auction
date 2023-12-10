@@ -19,8 +19,9 @@
 #define BID_INFO_SIZE (1 + 1 + UID_SIZE + 1 +)
 #define BID_LIST_SIZE (AUCTION_START_SIZE + 50*BID_INFO_SIZE + AUCTION_END_SIZE)
 
-#define CMD_SIZE 3
-#define STATUS_OK_SIZE 7
+#define CODE_SIZE 3
+#define STATUS_SIZE 3
+#define RES_SIZE (CODE_SIZE + 1 + STATUS_SIZE + 1)
 
 #define LIN_REQ "LIN "
 #define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
@@ -78,37 +79,12 @@
 #define STATUS_REF "REF\n"
 #define STATUS_ILG "ILG\n"
 
-// LIN UID(6-numeric) password(8-alphanumeric)\n
-char *login_req(char *uid, char *password);
-bool login_res(char *response, bool print);
+char *default_res(char* res, char* status);
 
-char *logout_req(char *uid, char *password);
-bool logout_res(char *response, bool print);
+char *open_auction_req(char* res, char* status, char* list);
 
-char *unregister_req(char *uid, char *password);
-bool unregister_res(char *response, bool print);
+char *auction_list_res(char* res, char* status, char* list);
 
-char *lmb_req(char* uid);
-void lmb_res(char* response, bool print);
-
-char *lma_req(char* uid);
-void lma_res(char* response, bool print);
-
-char *src_req(char* aid);
-void src_res(char* response, bool print);
-
-char *list_req();
-void list_res(char *response, bool print);
-
-char* close_req(char* uid, char* password, char* aid);
-bool close_res(char* response, bool print);
-
-char* bid_req(char* uid, char* password, char* aid, char* value);
-bool bid_res(char *response, bool print);
-
-char* sas_req(char* aid);
-
-char* opa_req(char* uid, char* password, char* name, char* start_value, char* timeactive, char* fname, char* fsize);
-bool opa_res(char *response, bool print);
+char *bid_list_res(char* res, char* status, char* list);
 
 #endif

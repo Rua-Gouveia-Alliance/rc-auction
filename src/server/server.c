@@ -11,6 +11,61 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+void login(char *uid, char *password) {
+    return;
+}
+
+void logout() {
+    return;
+}
+
+void unregister() {
+    return;
+}
+
+bool exit_prompt() {
+    return true;
+}
+
+void open_auc(char *name, char *asset_fname, char *start_value, char *timeactive) {
+    return;
+}
+
+void close_auc(char *aid) {
+    return;
+}
+
+void myauctions() {
+    return;
+}
+
+void mybids() {
+    return;
+}
+
+void list() {
+    return;
+}
+
+void show_asset(char *aid) {
+    return;
+}
+
+void bid(char *aid, char *value) {
+    return;
+}
+
+void show_record(char *aid) {
+    return;
+}
+
+void treat_request(char* request, bool verbose) {
+    if (verbose)
+        printf("Received request: %s", request);
+
+    return;
+}
+
 int main(int argc, char *argv[]) {
     char asport[5] = "58012"; // 58000 + group number
     bool verbose = false;

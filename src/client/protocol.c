@@ -198,6 +198,18 @@ void lmb_res(char *response, bool print) {
     }
 }
 
+char *src_req(char *aid) {
+    // setup buffer
+    char *msg = malloc((SRC_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (SRC_SIZE + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, SRC_REQ);
+    strcpy(&msg[CMD_SIZE + 1], aid);
+    msg[CMD_SIZE + 1 + AID_SIZE] = '\n';
+    return msg;
+}
+
 char *lma_req(char *uid) {
     // setup buffer
     char *msg = malloc((LMA_SIZE + 1) * sizeof(char));
