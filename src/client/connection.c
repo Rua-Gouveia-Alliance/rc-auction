@@ -23,8 +23,10 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
 
     // setup socket
     fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == -1)
+    if (fd == -1) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     // setup hints
     memset(&hints, 0, sizeof(hints));
@@ -33,20 +35,27 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
 
     // dns
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
-    if (errcode != 0)
+    if (errcode != 0) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     // send
     n = sendto(fd, msg, msg_size, 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
+    if (n == -1){
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     // receive
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, receive_size, 0, (struct sockaddr *)&addr,
                  &addrlen);
-    if (n == -1)
+
+    if (n == -1){
+        printf("error: communication with server failed\n");
         exit(1);
+    }
     buffer[n] = '\0';
 
     freeaddrinfo(res);
@@ -64,28 +73,38 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
     char *buffer = (char *)malloc((receive_size + 1) * sizeof(char));
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
-    if (fd == -1)
+    if (fd == -1) {
+        printf("error: communication with server failed\n");
         exit(1); // error
+    }
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
-    if (errcode != 0) /*error*/
+    if (errcode != 0) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1) /*error*/
+    if (n == -1) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     n = write(fd, msg, msg_size);
-    if (n == -1) /*error*/
+    if (n == -1) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     n = read(fd, buffer, receive_size);
-    if (n == -1) /*error*/
+    if (n == -1) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     freeaddrinfo(res);
     close(fd);
@@ -102,8 +121,10 @@ void read_word(int fd, char *buffer) {
     while (c != ' ') {
         buffer[i++] = c;
         n = read(fd, &c, sizeof(char));
-        if (n == -1)
-            exit(EXIT_FAILURE);
+        if (n == -1) {
+            printf("error: communication with server failed\n");
+            exit(1);
+        }
     }
 }
 
@@ -119,28 +140,38 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     char *buffer = (char *)malloc(PACKET_SIZE);
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
-    if (fd == -1)
-        exit(EXIT_FAILURE); // error
+    if (fd == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
-    if (errcode != 0) /*error*/
-        exit(EXIT_FAILURE);
+    if (errcode != 0) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1) /*error*/
-        exit(EXIT_FAILURE);
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     n = write(fd, msg, msg_size);
-    if (n == -1) /*error*/
-        exit(EXIT_FAILURE);
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     n = read(fd, status, 7);
-    if (n == -1) /*error*/
-        exit(EXIT_FAILURE);
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     status[6] = '\0';
 
@@ -160,15 +191,23 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
 
     int file_bytes = atoi(file_size);
     int file = open(file_name, O_CREAT | O_WRONLY, 0666);
+    if (file == -1) {
+        printf("error: writing to file failed\n");
+        exit(1);
+    }
 
     while (read_bytes < file_bytes) {
         n = read(fd, buffer, PACKET_SIZE);
-        if (n == -1) /*error*/
-            exit(EXIT_FAILURE);
+        if (n == -1) {
+            printf("error: communication with server failed\n");
+            exit(1);
+        }
 
         n = write(file, buffer, n);
-        if (n == -1) /*error*/
-            exit(EXIT_FAILURE);
+        if (n == -1) {
+            printf("error: writing to file failed\n");
+            exit(1);
+        }
 
         read_bytes += n;
     }
@@ -196,49 +235,67 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     char *response = (char *)malloc((receive_size + 1) * sizeof(char));
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
-    if (fd == -1)
-        exit(EXIT_FAILURE); // error
+    if (fd == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;       // IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP socket
 
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
-    if (errcode != 0) /*error*/
-        exit(EXIT_FAILURE);
+    if (errcode != 0) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1) /*error*/
-        exit(EXIT_FAILURE);
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     n = write(fd, msg, msg_size);
-    if (n == -1) /*error*/
-        exit(EXIT_FAILURE);
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        exit(1);
+    }
 
     int file = open(filename, O_RDONLY);
+    if (file == -1) {
+        printf("error: reading file failed\n");
+        exit(1);
+    }
     struct stat st;
     int failed = fstat(file, &st);
-    if (failed)
-        exit(EXIT_FAILURE);
+    if (failed) {
+        printf("error: reading file failed\n");
+        exit(1);
+    }
     int file_bytes = st.st_size;
     while (written_bytes < file_bytes) {
         memset(buffer, 0, PACKET_SIZE);
         n = read(file, buffer, PACKET_SIZE);
-        if (n == -1) /*error*/ {
-            exit(EXIT_FAILURE);
+        if (n == -1) {
+            printf("error: reading file failed\n");
+            exit(1);
         }
 
         n = write(fd, buffer, n);
-        if (n == -1) /*error*/ {
-            exit(EXIT_FAILURE);
+        if (n == -1) {
+            printf("error: communication with server failed\n");
+            exit(1);
         }
 
         written_bytes += n;
     }
 
     n = read(fd, response, receive_size);
-    if (n == -1) /*error*/
+    if (n == -1) {
+        printf("error: communication with server failed\n");
         exit(1);
+    }
 
     free(buffer);
 
