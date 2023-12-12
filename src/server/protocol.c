@@ -20,7 +20,7 @@ char *default_res(char* code, char* status) {
     return msg;
 }
 
-char *open_auction_req(char* res, char* status, char* list);
+char *open_auction_res(char* res, char* status, char* list);
 
 char *auction_list_res(char* res, char* status, char* list);
 
