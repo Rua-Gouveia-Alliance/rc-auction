@@ -78,6 +78,7 @@
 #define STATUS_ACC "ACC\n"
 #define STATUS_REF "REF\n"
 #define STATUS_ILG "ILG\n"
+#define STATUS_ERR "ERR\n"
 
 char *default_res(char* res, char* status);
 
