@@ -10,8 +10,52 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 
+char* get_filename(char* dir, char* id, char* ext, int size) {
+    char* filename = (char*)malloc(size*sizeof(char));
+
+    sprintf(filename, "%s%s%s", dir, id, ext);
+    
+    return filename;
+}
+
+// TODO: Add server replies to client
 void login(char *uid, char *password) {
+    int pass_fd, logged_in_fd;
+    char* response, *pass_filename, *logged_in_filename, *recorded_pass;
+    
+    pass_filename = get_filename(USERS_DIR, uid, PASS_FILENAME_EXT, PASS_FILENAME_SIZE);
+    logged_in_filename = get_filename(USERS_DIR, uid, LOGGED_IN_FILENAME_EXT,LOGGED_IN_FILENAME_SIZE);
+
+    pass_fd = open(pass_filename, O_RDONLY);
+    logged_in_fd = open(logged_in_filename, O_RDONLY);
+    
+    if (pass_fd == -1) {
+    // User is not registered yet
+        pass_fd = open(pass_filename, O_CREAT | O_WRONLY);
+        write(pass_fd, password, strlen(password));
+        logged_in_fd = open(logged_in_filename, O_CREAT);
+
+    } else if (logged_in_fd == -1) {
+    // User registered but not logged in
+        recorded_pass = (char*)malloc(PASS_SIZE + 1);
+        read(pass_fd, recorded_pass, PASS_SIZE);
+        recorded_pass[PASS_SIZE] = '\0';
+        
+        if (strcmp(recorded_pass, password) == 0) {
+        // Correct password, logging in        
+            logged_in_fd = open(logged_in_filename, O_CREAT);
+        } else {
+        // Failed password
+
+        }
+
+    } else {
+    // User registered and already logged in
+
+    }
+
     return;
 }
 
