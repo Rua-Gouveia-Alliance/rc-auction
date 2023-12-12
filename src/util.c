@@ -14,7 +14,7 @@ bool is_numeric(const char *str) {
 
 bool is_alphanumeric(const char *str) {
     while (*str) {
-        if (!isalnum(*str)) {
+        if (!isalnum(*str) && *str != '-' && *str != '_') {
             return false; // Return false if any character is not alphanumeric
         }
         str++;
