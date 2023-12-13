@@ -14,57 +14,73 @@
 
 #define DEFAULT_SIZE 128
 #define AUCTION_LIST_SIZE (6 * 1024)
-#define AUCTION_START_SIZE (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE)
+#define AUCTION_START_SIZE                                                     \
+    (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 +      \
+     DUR_SIZE)
 #define AUCTION_END_SIZE (19)
 #define BID_INFO_SIZE (1 + 1 + UID_SIZE + 1 +)
-#define BID_LIST_SIZE (AUCTION_START_SIZE + 50*BID_INFO_SIZE + AUCTION_END_SIZE)
+#define BID_LIST_SIZE                                                          \
+    (AUCTION_START_SIZE + 50 * BID_INFO_SIZE + AUCTION_END_SIZE)
 
 #define CODE_SIZE 3
 #define STATUS_SIZE 3
 #define RES_SIZE (CODE_SIZE + 1 + STATUS_SIZE + 1)
 
+#define LIN 0
 #define LIN_REQ "LIN"
 #define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define LIN_RES "RLI "
 
+#define LOU 1
 #define LOU_REQ "LOU"
 #define LOU_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define LOU_RES "RLO "
 
+#define UNR 2
 #define UNR_REQ "UNR"
 #define UNR_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define UNR_RES "RUR "
 
+#define LMA 3
 #define LMA_REQ "LMA"
 #define LMA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
 #define LMA_RES "RMA "
 
+#define LMB 4
 #define LMB_REQ "LMB"
 #define LMB_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
 #define LMB_RES "RMB "
 
+#define LST 5
 #define LST_REQ "LST\n"
 #define LST_SIZE (CMD_SIZE + 1)
 #define RLS_OK "RLS OK "
 
+#define SRC 6
 #define SRC_REQ "SRC"
 #define SRC_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
 #define SRC_RES "RRC "
 
+#define CLS 7
 #define CLS_REQ "CLS"
 #define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 #define CLS_RES "RCL "
 
+#define BID 8
 #define BID_REQ "BID"
 #define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 #define BID_RES "RBD "
 
+#define SAS 9
 #define SAS_REQ "SAS"
 #define SAS_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
 #define SAS_RES "RSA "
 
+#define OPA 10
 #define OPA_REQ "OPA"
-#define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
+#define OPA_SIZE                                                               \
+    (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 +             \
+     START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 #define OPA_RES "ROA "
 
 #define STATUS_OK "OK\n"
@@ -80,12 +96,16 @@
 #define STATUS_ILG "ILG\n"
 #define STATUS_ERR "ERR\n"
 
-char *default_res(char* res, char* status);
+int interpret_req(char *msg);
 
-char *open_auction_req(char* res, char* status, char* list);
+void parse_lin(char *msg, char *uid, char *password);
 
-char *auction_list_res(char* res, char* status, char* list);
+char *default_res(char *res, char *status);
 
-char *bid_list_res(char* res, char* status, char* list);
+char *open_auction_req(char *res, char *status, char *list);
+
+char *auction_list_res(char *res, char *status, char *list);
+
+char *bid_list_res(char *res, char *status, char *list);
 
 #endif

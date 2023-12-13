@@ -6,8 +6,40 @@
 #include <string.h>
 #include <unistd.h>
 
+int interpret_req(char *msg) {
+    if (strncmp(msg, LIN_REQ, CODE_SIZE))
+        return LIN;
+    else if (strncmp(msg, LOU_REQ, CODE_SIZE))
+        return LOU;
+    else if (strncmp(msg, UNR_REQ, CODE_SIZE))
+        return UNR;
+    else if (strncmp(msg, LMA_REQ, CODE_SIZE))
+        return LMA;
+    else if (strncmp(msg, LMB_REQ, CODE_SIZE))
+        return LMB;
+    else if (strncmp(msg, LST_REQ, CODE_SIZE))
+        return LST;
+    else if (strncmp(msg, SRC_REQ, CODE_SIZE))
+        return SRC;
+    else if (strncmp(msg, CLS_REQ, CODE_SIZE))
+        return CLS;
+    else if (strncmp(msg, BID_REQ, CODE_SIZE))
+        return BID;
+    else if (strncmp(msg, SAS_REQ, CODE_SIZE))
+        return SAS;
+    else if (strncmp(msg, OPA_REQ, CODE_SIZE))
+        return OPA;
+    else
+        return -1;
+}
 
-char *default_res(char* code, char* status) {
+void parse_lin(char *msg, char *uid, char *password) {
+    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
+    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
+}
+
+char *default_res(char *code, char *status) {
     // setup buffer
     char *msg = malloc((RES_SIZE) * sizeof(char));
     memset(msg, 0, (RES_SIZE) * sizeof(char));
@@ -20,8 +52,8 @@ char *default_res(char* code, char* status) {
     return msg;
 }
 
-char *open_auction_res(char* res, char* status, char* list);
+char *open_auction_res(char *res, char *status, char *list);
 
-char *auction_list_res(char* res, char* status, char* list);
+char *auction_list_res(char *res, char *status, char *list);
 
-char *bid_list_res(char* res, char* status, char* list);
+char *bid_list_res(char *res, char *status, char *list);

@@ -14,6 +14,8 @@
 
 TCPInfo tcp_conns[MAX_TCP_COUNT] = {[0 ... MAX_TCP_COUNT - 1] = {-1, NULL, 0}};
 
+static struct sockaddr_in last_addr;
+
 int new_tcpconn(int fd) {
     for (int i = 0; i < MAX_TCP_COUNT; i++) {
         if (tcp_conns[i].socket_id == -1) {
@@ -121,19 +123,17 @@ int accept_new_tcp(int tcp_main) {
         printf("error: too many clients\n");
         return -1;
     }
-    printf("%d\n", newfd);
     return newfd;
 }
 
 char *receive_udp(int udp_sock) {
     ssize_t n;
     socklen_t addrlen;
-    struct sockaddr_in addr;
     char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
 
-    addrlen = sizeof(addr);
-    n = recvfrom(udp_sock, buffer, DEFAULT_SIZE, 0, (struct sockaddr *)&addr,
-                 &addrlen);
+    addrlen = sizeof(last_addr);
+    n = recvfrom(udp_sock, buffer, DEFAULT_SIZE, 0,
+                 (struct sockaddr *)&last_addr, &addrlen);
     if (n == -1) {
         printf("error: udp receive error\n");
         exit(1);
@@ -150,15 +150,46 @@ char *receive_tcp(int tcp_sock) {
 
     tcp_info = get_tcpinfo(tcp_sock);
     addrlen = sizeof(addr);
-    n = recvfrom(tcp_sock, tcp_info->buffer + tcp_info->buffer_i,
-                 DEFAULT_SIZE - tcp_info->buffer_i, 0, (struct sockaddr *)&addr,
-                 &addrlen);
-    if (n == -1)
+    n = read(tcp_sock, tcp_info->buffer + tcp_info->buffer_i,
+             DEFAULT_SIZE - tcp_info->buffer_i);
+    if (n == -1) {
+        printf("error: tcp read error");
         exit(1);
+    }
 
     tcp_info->buffer_i += n;
     if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n')
         return tcp_info->buffer;
 
     return NULL;
+}
+
+void send_udp(int udp_sock, char *msg, struct sockaddr_in *addr) {
+    socklen_t addrlen;
+    ssize_t n;
+
+    // if addr is NULL, use last received UDP addr
+    if (addr != NULL)
+        last_addr = *addr;
+
+    addrlen = sizeof(last_addr);
+    n = sendto(udp_sock, msg, strlen(msg), 0, (struct sockaddr *)&last_addr,
+               addrlen);
+    if (n == -1) {
+        printf("error: failed to send udp response");
+        exit(1);
+    }
+}
+
+void send_tcp(int tcp_sock, char *msg) {
+    ssize_t n;
+
+    n = read(tcp_sock, msg, strlen(msg));
+    if (n == -1) {
+        printf("error: failed to send tcp response\n");
+        exit(1);
+    }
+
+    close(tcp_sock);
+    rm_tcpconn(tcp_sock);
 }

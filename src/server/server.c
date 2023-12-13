@@ -1,5 +1,6 @@
 #include "server.h"
 #include "connection.h"
+#include "protocol.h"
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -14,7 +15,7 @@
 #include <unistd.h>
 
 static char asport[] = "58012"; // 58000 + group number
-static bool verbose = false;
+static bool verbose = true;     // TODO: default is false
 
 char *get_filename(char *dir, char *id, char *ext, int size) {
     char *filename = (char *)malloc(size * sizeof(char));
@@ -53,7 +54,7 @@ int check_password(int pass_fd, char *password) {
 }
 
 // TODO: Add server replies to client
-void login(char *uid, char *password) {
+char *login(char *uid, char *password) {
     ssize_t n;
     int pass_fd, logged_in_fd;
     char *response, *pass_filename, *logged_in_filename;
@@ -105,14 +106,12 @@ void login(char *uid, char *password) {
         response = default_res(LIN_RES, STATUS_OK);
     }
 
-    free(response);
     free(pass_filename);
     free(logged_in_filename);
-
-    return;
+    return response;
 }
 
-void logout(char *uid, char *password) {
+char *logout(char *uid, char *password) {
     int pass_fd, logged_in_fd, n;
     char *response, *pass_filename, *logged_in_filename;
 
@@ -157,14 +156,12 @@ void logout(char *uid, char *password) {
         }
     }
 
-    free(response);
     free(pass_filename);
     free(logged_in_filename);
-
-    return;
+    return response;
 }
 
-void unregister(char *uid, char *password) {
+char *unregister(char *uid, char *password) {
     int pass_fd, logged_in_fd, n;
     char *response, *pass_filename, *logged_in_filename;
 
@@ -216,36 +213,73 @@ void unregister(char *uid, char *password) {
         }
     }
 
-    free(response);
     free(pass_filename);
     free(logged_in_filename);
-
-    return;
+    return response;
 }
 
-void open_auc(char *name, char *asset_fname, char *start_value,
-              char *timeactive) {
-    return;
+char *open_auc(char *name, char *asset_fname, char *start_value,
+               char *timeactive) {
+    return NULL;
 }
 
-void close_auc(char *aid) { return; }
+char *close_auc(char *aid) { return NULL; }
 
-void myauctions() { return; }
+char *myauctions() { return NULL; }
 
-void mybids() { return; }
+char *mybids() { return NULL; }
 
-void list() { return; }
+char *list() { return NULL; }
 
-void show_asset(char *aid) { return; }
+char *show_asset(char *aid) { return NULL; }
 
-void bid(char *aid, char *value) { return; }
+char *bid(char *aid, char *value) { return NULL; }
 
-void show_record(char *aid) { return; }
+char *show_record(char *aid) { return NULL; }
 
-void treat_request(char *request) {
+void treat_request(char *request, int socket) {
+    int id;
+    char *response;
+
     if (verbose)
         printf("Received request: %s", request);
 
+    id = interpret_req(request);
+    switch (id) {
+    case LIN: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+        parse_lin(request, uid, pass);
+        response = login(uid, pass);
+        send_udp(socket, response, NULL);
+        break;
+    }
+    case LOU:
+        break;
+    case UNR:
+        break;
+    case LMA:
+        break;
+    case LMB:
+        break;
+    case LST:
+        break;
+    case SRC:
+        break;
+    case CLS:
+        break;
+    case BID:
+        break;
+    case SAS:
+        break;
+    case OPA:
+        break;
+    default:
+        break;
+    }
+
+    free(response);
+    free(request);
     return;
 }
 
@@ -289,12 +323,12 @@ void handle_sockets() {
                     } else if (i == udp_sock) {
                         buffer = receive_udp(udp_sock);
                         if (buffer != NULL)
-                            treat_request(buffer);
+                            treat_request(buffer, i);
                     } else {
                         buffer = receive_tcp(i);
                         if (buffer != NULL) {
                             FD_CLR(i, &current_sockets);
-                            treat_request(buffer);
+                            treat_request(buffer, i);
                         }
                     }
                 }
