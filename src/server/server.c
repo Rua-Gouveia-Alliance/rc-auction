@@ -242,7 +242,7 @@ void bid(char *aid, char *value) { return; }
 
 void show_record(char *aid) { return; }
 
-void treat_request(char *request, bool verbose) {
+void treat_request(char *request) {
     if (verbose)
         printf("Received request: %s", request);
 
@@ -254,6 +254,7 @@ void handle_sockets() {
     bool done, ok;
     fd_set current_sockets, ready_sockets;
     struct timeval timeout;
+    char *buffer;
 
     tcp_main = setup_tcp(asport);
     udp_sock = setup_udp(asport);
@@ -287,11 +288,15 @@ void handle_sockets() {
                         if (temp_sock != -1)
                             FD_SET(temp_sock, &current_sockets);
                     } else if (i == udp_sock) {
-                        handle_udp(udp_sock);
+                        buffer = handle_udp(udp_sock);
+                        if (buffer != NULL)
+                            treat_request(buffer);
                     } else {
-                        done = handle_tcp(i);
-                        if (done)
+                        buffer = handle_tcp(i);
+                        if (buffer != NULL) {
                             FD_CLR(i, &current_sockets);
+                            treat_request(buffer);
+                        }
                     }
                 }
             }
@@ -307,6 +312,7 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "p:v")) != -1) {
         switch (opt) {
         case 'p':
+            // TODO: check for valid port num
             strncpy(asport, optarg, 5);
             break;
         case 'v':

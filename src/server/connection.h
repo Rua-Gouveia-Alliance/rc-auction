@@ -16,8 +16,8 @@ int setup_udp(char *port);
 
 int accept_new_tcp(int tcp_main);
 
-void handle_udp(int udp_sock);
+char *handle_udp(int udp_sock);
 
-bool handle_tcp(int tcp_sock);
+char *handle_tcp(int tcp_sock);
 
 #endif

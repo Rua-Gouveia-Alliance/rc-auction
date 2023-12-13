@@ -1,5 +1,7 @@
 #include "connection.h"
 
+#include <stdio.h>
+
 static TCPInfo tcp_conns[MAX_TCP_COUNT];
 
 int setup_tcp(char *port) {
@@ -17,12 +19,12 @@ int accept_new_tcp(int tcp_main) {
     return false;
 }
 
-void handle_udp(int udp_sock) {
+char *handle_udp(int udp_sock) {
     // TODO
-    return;
+    return NULL;
 }
 
-bool handle_tcp(int tcp_sock) {
+char *handle_tcp(int tcp_sock) {
     // TODO
-    return false;
+    return NULL;
 }
