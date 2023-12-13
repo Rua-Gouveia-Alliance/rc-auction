@@ -288,11 +288,11 @@ void handle_sockets() {
                         if (temp_sock != -1)
                             FD_SET(temp_sock, &current_sockets);
                     } else if (i == udp_sock) {
-                        buffer = handle_udp(udp_sock);
+                        buffer = receive_udp(udp_sock);
                         if (buffer != NULL)
                             treat_request(buffer);
                     } else {
-                        buffer = handle_tcp(i);
+                        buffer = receive_tcp(i);
                         if (buffer != NULL) {
                             FD_CLR(i, &current_sockets);
                             treat_request(buffer);
