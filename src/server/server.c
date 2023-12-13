@@ -18,14 +18,14 @@ static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
 
 char *get_filename(char *dir, char *id, char *ext, int size) {
-    char *filename = (char *)malloc(size * sizeof(char));
+    char *filename = (char *)malloc((size + 1) * sizeof(char));
+    memset(filename, 0, (size + 1) * sizeof(char));
     if (filename == NULL) {
         printf("No more memory, shutting down.\n");
         exit(EXIT_FAILURE);
     }
 
     sprintf(filename, "%s%s%s", dir, id, ext);
-
     return filename;
 }
 
@@ -53,7 +53,6 @@ int check_password(int pass_fd, char *password) {
     return right_password;
 }
 
-// TODO: Add server replies to client
 char *login(char *uid, char *password) {
     ssize_t n;
     int pass_fd, logged_in_fd;
@@ -69,46 +68,67 @@ char *login(char *uid, char *password) {
 
     if (pass_fd == -1) {
         // User is not registered yet
-        response = default_res(LIN_RES, STATUS_REG);
-        pass_fd = open(pass_filename, O_CREAT | O_WRONLY);
+        pass_fd = open(pass_filename, O_CREAT | O_WRONLY, 0666);
         if (pass_fd == -1) {
-            response = default_res(LIN_RES, STATUS_ERR);
+            printf("ooiiii1\n");
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LIN_RES, STATUS_ERR);
         }
 
         n = write(pass_fd, password, strlen(password));
         if (n == -1) {
-            response = default_res(LIN_RES, STATUS_ERR);
+            printf("ooiiii2\n");
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LIN_RES, STATUS_ERR);
         }
 
-        logged_in_fd = open(logged_in_filename, O_CREAT);
+        logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
         if (logged_in_fd == -1) {
-            response = default_res(LIN_RES, STATUS_ERR);
+            printf("ooiiii3\n");
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LIN_RES, STATUS_ERR);
         }
+
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LIN_RES, STATUS_REG);
     } else if (logged_in_fd == -1) {
         // User registered but not logged in
         int right_password = check_password(pass_fd, password);
 
         if (right_password == -1) {
-            response = default_res(LIN_RES, STATUS_ERR);
+            printf("ooiiii4\n");
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LIN_RES, STATUS_ERR);
         } else if (right_password) {
             // Correct password, logging in
-            response = default_res(LIN_RES, STATUS_OK);
-            logged_in_fd = open(logged_in_filename, O_CREAT);
+            logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
             if (logged_in_fd == -1) {
-                response = default_res(LIN_RES, STATUS_ERR);
+                printf("ooiiii5\n");
+                free(pass_filename);
+                free(logged_in_filename);
+                return default_res(LIN_RES, STATUS_ERR);
             }
-        } else {
-            // Failed password
-            response = default_res(LIN_RES, STATUS_NOK);
+
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LIN_RES, STATUS_OK);
         }
-    } else {
-        // User registered and already logged in
-        response = default_res(LIN_RES, STATUS_OK);
+
+        // Failed password
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LIN_RES, STATUS_NOK);
     }
 
+    // User registered and already logged in
     free(pass_filename);
     free(logged_in_filename);
-    return response;
+    return default_res(LIN_RES, STATUS_OK);
 }
 
 char *logout(char *uid, char *password) {
@@ -141,9 +161,8 @@ char *logout(char *uid, char *password) {
             // Correct password, logging out
             response = default_res(LOU_RES, STATUS_OK);
             n = remove(logged_in_filename);
-            if (n == -1) {
+            if (n == -1)
                 response = default_res(LOU_RES, STATUS_ERR);
-            }
         } else {
             // Failed password
             response = default_res(LOU_RES, STATUS_ERR);
@@ -151,9 +170,8 @@ char *logout(char *uid, char *password) {
 
         response = default_res(LOU_RES, STATUS_OK);
         n = remove(logged_in_filename);
-        if (n == -1) {
+        if (n == -1)
             response = default_res(LOU_RES, STATUS_ERR);
-        }
     }
 
     free(pass_filename);
@@ -251,6 +269,7 @@ void treat_request(char *request, int socket) {
         char pass[PASS_SIZE + 1];
         parse_lin(request, uid, pass);
         response = login(uid, pass);
+        printf("%s\n", response);
         send_udp(socket, response, NULL);
         break;
     }

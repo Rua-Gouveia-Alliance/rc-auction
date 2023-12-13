@@ -41,11 +41,12 @@ void parse_lin(char *msg, char *uid, char *password) {
 
 char *default_res(char *code, char *status) {
     // setup buffer
-    char *msg = malloc((RES_SIZE) * sizeof(char));
-    memset(msg, 0, (RES_SIZE) * sizeof(char));
+    char *msg = malloc((RES_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (RES_SIZE + 1) * sizeof(char));
 
     // copy data
     strcpy(msg, code);
+    msg[CODE_SIZE] = ' ';
     strcpy(&msg[CODE_SIZE + 1], status);
     msg[CODE_SIZE + 1 + STATUS_SIZE] = '\n';
 

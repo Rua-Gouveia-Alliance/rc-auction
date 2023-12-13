@@ -198,7 +198,7 @@ void lmb_res(char *response, bool print) {
     }
 }
 
-void print_record(char* response) {
+void print_record(char *response) {
     int last_pos;
     char *token, *list_pos;
 
@@ -323,7 +323,7 @@ void print_record(char* response) {
         printf("%ss\n", token);
         token = strtok(NULL, " ");
 
-        if (token == NULL){
+        if (token == NULL) {
             printf("\n");
             return;
         }
