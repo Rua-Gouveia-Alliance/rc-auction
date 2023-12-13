@@ -269,14 +269,13 @@ void handle_sockets() {
         timeout.tv_sec = 10;
 
         out_select = select(FD_SETSIZE, &ready_sockets, NULL, NULL,
-                            (struct timeval *)&timeout) < 0;
+                            (struct timeval *)&timeout);
 
         switch (out_select) {
         case 0:
             // TODO: timeout
             break;
         case -1:
-            printf("select error\n");
             exit(EXIT_FAILURE);
             break;
         default:

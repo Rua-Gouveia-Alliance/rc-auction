@@ -14,6 +14,44 @@
 
 TCPInfo tcp_conns[MAX_TCP_COUNT] = {[0 ... MAX_TCP_COUNT - 1] = {-1, NULL, 0}};
 
+int new_tcpconn(int fd) {
+    for (int i = 0; i < MAX_TCP_COUNT; i++) {
+        if (tcp_conns[i].socket_id == -1) {
+            tcp_conns[i].socket_id = fd;
+            tcp_conns[i].buffer = malloc(DEFAULT_SIZE);
+            return i;
+        }
+    }
+    return -1;
+}
+
+int rm_tcpconn(int fd) {
+    for (int i = 0; i < MAX_TCP_COUNT; i++) {
+        if (fd == tcp_conns[i].socket_id) {
+            tcp_conns[i].socket_id = -1;
+            free(tcp_conns[i].buffer);
+            tcp_conns[i].buffer = NULL;
+            tcp_conns[i].buffer_i = 0;
+
+            return 0;
+        }
+    }
+    return -1;
+}
+
+TCPInfo *get_tcpinfo(int fd) {
+    int tcpconn;
+    for (int i = 0; i < MAX_TCP_COUNT; i++) {
+        if (fd == tcp_conns[i].socket_id)
+            return tcp_conns + i;
+    }
+
+    tcpconn = new_tcpconn(fd);
+    if (tcpconn != -1)
+        return tcp_conns + new_tcpconn(fd);
+    return NULL;
+}
+
 int setup_tcp(char *port) {
     int fd, errcode;
     ssize_t n;
@@ -68,49 +106,23 @@ int setup_udp(char *port) {
 }
 
 int accept_new_tcp(int tcp_main) {
+    TCPInfo *tcp_info;
     int newfd;
     struct sockaddr_in addr;
     socklen_t addrlen;
 
-    if ((newfd = accept(tcp_main, (struct sockaddr *)&addr, &addrlen)) == -1)
+    if ((newfd = accept(tcp_main, (struct sockaddr *)&addr, &addrlen)) == -1) {
+        printf("error: tcp connection not accepted\n");
         exit(1);
+    }
 
-    // TODO: add connection to TCPInfo
+    tcp_info = get_tcpinfo(tcp_main);
+    if (tcp_info == NULL) {
+        printf("error: too many clients\n");
+        return -1;
+    }
+    printf("%d\n", newfd);
     return newfd;
-}
-
-int new_tcpconn(int fd) {
-    for (int i = 0; i < MAX_TCP_COUNT; i++) {
-        if (tcp_conns[i].socket_id == -1) {
-            tcp_conns[i].socket_id = fd;
-            tcp_conns[i].buffer = malloc(DEFAULT_SIZE);
-            return i;
-        }
-    }
-    return -1;
-}
-
-int rm_tcpconn(int fd) {
-    for (int i = 0; i < MAX_TCP_COUNT; i++) {
-        if (fd == tcp_conns[i].socket_id) {
-            tcp_conns[i].socket_id = -1;
-            free(tcp_conns[i].buffer);
-            tcp_conns[i].buffer = NULL;
-            tcp_conns[i].buffer_i = 0;
-
-            return 0;
-        }
-    }
-    return -1;
-}
-
-TCPInfo *get_tcpinfo(int fd) {
-    for (int i = 0; i < MAX_TCP_COUNT; i++) {
-        if (fd == tcp_conns[i].socket_id)
-            return tcp_conns + i;
-    }
-
-    return tcp_conns + new_tcpconn(fd);
 }
 
 char *receive_udp(int udp_sock) {
@@ -122,8 +134,10 @@ char *receive_udp(int udp_sock) {
     addrlen = sizeof(addr);
     n = recvfrom(udp_sock, buffer, DEFAULT_SIZE, 0, (struct sockaddr *)&addr,
                  &addrlen);
-    if (n == -1)
+    if (n == -1) {
+        printf("error: udp receive error\n");
         exit(1);
+    }
 
     return buffer;
 }
@@ -136,13 +150,14 @@ char *receive_tcp(int tcp_sock) {
 
     tcp_info = get_tcpinfo(tcp_sock);
     addrlen = sizeof(addr);
-    n = recvfrom(tcp_sock, tcp_info->buffer, DEFAULT_SIZE - tcp_info->buffer_i,
-                 0, (struct sockaddr *)&addr, &addrlen);
+    n = recvfrom(tcp_sock, tcp_info->buffer + tcp_info->buffer_i,
+                 DEFAULT_SIZE - tcp_info->buffer_i, 0, (struct sockaddr *)&addr,
+                 &addrlen);
     if (n == -1)
         exit(1);
 
     tcp_info->buffer_i += n;
-    if (n < tcp_info->buffer[tcp_info->buffer_i - 1])
+    if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n')
         return tcp_info->buffer;
 
     return NULL;
