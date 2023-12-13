@@ -283,8 +283,8 @@ void handle_sockets() {
                 if (FD_ISSET(i, &ready_sockets)) {
                     if (i == tcp_main) {
                         // new tcp connecton
-                        ok = temp_sock = accept_new_tcp(tcp_main);
-                        if (ok)
+                        temp_sock = accept_new_tcp(tcp_main);
+                        if (temp_sock != -1)
                             FD_SET(temp_sock, &current_sockets);
                     } else if (i == udp_sock) {
                         handle_udp(udp_sock);
