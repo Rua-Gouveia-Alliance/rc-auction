@@ -169,7 +169,7 @@ bool user_ok_password(char *uid, char *password) {
 
 char *auction_dir(char *aid) { return get_filename(AUCTIONS_DIR, aid, "/"); }
 
-bool auction_exits(char *aid) {
+bool auction_exists(char *aid) {
     char *auction = auction_dir(aid);
 
     if (path_exists(auction)) {
