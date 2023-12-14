@@ -48,7 +48,6 @@ char *default_res(char *code, char *status) {
     strcpy(msg, code);
     msg[CODE_SIZE] = ' ';
     strcpy(&msg[CODE_SIZE + 1], status);
-    msg[CODE_SIZE + 1 + STATUS_SIZE] = '\n';
 
     return msg;
 }

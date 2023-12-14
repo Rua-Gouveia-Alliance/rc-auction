@@ -70,7 +70,6 @@ char *login(char *uid, char *password) {
         // User is not registered yet
         pass_fd = open(pass_filename, O_CREAT | O_WRONLY, 0666);
         if (pass_fd == -1) {
-            printf("ooiiii1\n");
             free(pass_filename);
             free(logged_in_filename);
             return default_res(LIN_RES, STATUS_ERR);
@@ -78,7 +77,6 @@ char *login(char *uid, char *password) {
 
         n = write(pass_fd, password, strlen(password));
         if (n == -1) {
-            printf("ooiiii2\n");
             free(pass_filename);
             free(logged_in_filename);
             return default_res(LIN_RES, STATUS_ERR);
@@ -86,7 +84,6 @@ char *login(char *uid, char *password) {
 
         logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
         if (logged_in_fd == -1) {
-            printf("ooiiii3\n");
             free(pass_filename);
             free(logged_in_filename);
             return default_res(LIN_RES, STATUS_ERR);
@@ -100,7 +97,6 @@ char *login(char *uid, char *password) {
         int right_password = check_password(pass_fd, password);
 
         if (right_password == -1) {
-            printf("ooiiii4\n");
             free(pass_filename);
             free(logged_in_filename);
             return default_res(LIN_RES, STATUS_ERR);
@@ -108,7 +104,6 @@ char *login(char *uid, char *password) {
             // Correct password, logging in
             logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
             if (logged_in_fd == -1) {
-                printf("ooiiii5\n");
                 free(pass_filename);
                 free(logged_in_filename);
                 return default_res(LIN_RES, STATUS_ERR);
