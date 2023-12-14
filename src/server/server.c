@@ -1,3 +1,5 @@
+// #define _XOPEN_SOURCE
+// E preciso acrescentar a linha acima para o strptime funcionar, mas fode as cenas das sockets todas
 #include "server.h"
 #include "../util.h"
 #include "connection.h"
@@ -15,9 +17,125 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
+
+int create_end_file(char* fname, time_t end_datetime, int end_duration) {
+    ssize_t n;
+    int end_fd;
+    char datetime[DATE_TIME_SIZE+2], duration[DUR_SIZE + 1];
+    
+    if (datetime == NULL || duration == NULL) {
+        printf("No more memory, shutting down.\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    end_fd = open(fname, O_CREAT);
+    if (end_fd == -1) {
+        return -1;
+    }
+    
+    n = strftime(datetime, DATE_TIME_SIZE + 1, "%Y-%m-%d %H:%M:%S ", localtime(&end_datetime));
+    if (n == 0) {
+        remove(fname);
+        return -1;
+    }
+    
+    n = write(end_fd, datetime, DATE_TIME_SIZE+1);
+    if (n == -1) {
+        remove(fname);
+        return -1;
+    }
+
+    n = sprintf(duration, "%d", end_duration);
+    if (n < 0 ) {
+        remove(fname);
+        return -1;
+    }
+
+    n = write(end_fd, duration, DUR_SIZE);
+    if (n == -1) {
+        remove(fname);
+        return -1;
+    }
+
+    return end_fd;
+}
+
+int parse_start_file(int fd, char* uid, char* name,char* asset_fname,char* start_value,char* timeactive,char* start_datetime) {
+    ssize_t n;
+    char *token, *contents;
+    
+    contents = (char*)malloc(sizeof(char)*START_CONTENTS_SIZE + 1);
+    n = read(fd, contents, START_CONTENTS_SIZE + 1);
+    if (n == -1)  {
+        return - 1;
+    }
+
+    // UID
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (uid != NULL) {
+        strcpy(uid, token);
+    }
+
+    // name
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (name != NULL) {
+        strcpy(name, token);
+    }
+
+    // asset_fname
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (asset_fname != NULL) {
+        strcpy(asset_fname, token);
+    }
+
+    // start_value
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (start_value != NULL) {
+        strcpy(start_value, token);
+    }
+
+    // timeactive
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (timeactive != NULL) {
+        strcpy(timeactive, token);
+    }
+
+    // start_datetime
+    token = strtok(contents, " ");
+    if (token == NULL)  {
+        return - 1;
+    }
+    if (start_datetime != NULL) {
+        strcpy(start_datetime, token);
+        start_datetime[DATE_SIZE] = ' ';
+
+        token = strtok(contents, " ");
+        if (token == NULL)  {
+            return - 1;
+        }
+
+        strcpy(start_datetime + DATE_SIZE + 1, token);
+    }
+}
 
 int check_password(int pass_fd, char *password) {
     ssize_t n;
@@ -308,8 +426,52 @@ char *close_auc(char* uid, char* password, char *aid) {
             return default_res(CLS_RES, STATUS_END);
         }
 
+        // Maybe the auction is already finished but we haven't created the file yet
+        int duration;
+        double time_diff;
+        char start_time[DATE_TIME_SIZE + 1], duration_str[DUR_SIZE + 1];
+        struct tm tm_end_time;
+        time_t current_time, end_time;
+
+        lseek(start_fd, 0, SEEK_SET);
+        n = parse_start_file(start_fd, NULL, NULL, NULL, NULL, duration_str, start_time);
+        if (n == - 1) {
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_ERR);
+        }
+
+        strptime(start_time, "%Y-%m-%d %H:%M:%S", &tm_end_time);
+
+        duration = atoi(duration_str);
+        if (duration == 0) {
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_ERR);
+        }
+
+        tm_end_time.tm_sec += duration;
+        end_time = mktime(&tm_end_time);
+        if (end_time == -1) {
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_ERR);
+        }
+
+        current_time = time(NULL);
+        time_diff = difftime(end_time, current_time);
+        if (time_diff < 0) {
+            end_fd = create_end_file(end_filename, end_time, duration);
+            free(end_filename);
+
+            if (end_fd == -1) {
+                default_res(CLS_RES, STATUS_ERR);
+            }
+            return default_res(CLS_RES, STATUS_END);
+        }
+
         // Closing auction
-        end_fd = open(end_filename, O_CREAT);
+        end_fd = create_end_file(end_filename, current_time, duration - ((int) time_diff));
+        if (end_fd == -1) {
+            default_res(CLS_RES, STATUS_ERR);
+        }
         free(end_filename);
         return default_res(CLS_RES, STATUS_OK);
     }
