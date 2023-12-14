@@ -1,4 +1,5 @@
 #include "server.h"
+#include "../util.h"
 #include "connection.h"
 #include "protocol.h"
 #include <arpa/inet.h>
@@ -16,18 +17,6 @@
 
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
-
-char *get_filename(char *dir, char *id, char *ext, int size) {
-    char *filename = (char *)malloc((size + 1) * sizeof(char));
-    memset(filename, 0, (size + 1) * sizeof(char));
-    if (filename == NULL) {
-        printf("No more memory, shutting down.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    sprintf(filename, "%s%s%s", dir, id, ext);
-    return filename;
-}
 
 int check_password(int pass_fd, char *password) {
     ssize_t n;
@@ -95,7 +84,6 @@ char *login(char *uid, char *password) {
     } else if (logged_in_fd == -1) {
         // User registered but not logged in
         int right_password = check_password(pass_fd, password);
-
         if (right_password == -1) {
             free(pass_filename);
             free(logged_in_filename);
@@ -140,38 +128,40 @@ char *logout(char *uid, char *password) {
 
     if (pass_fd == -1) {
         // User is not registered yet
-        response = default_res(LOU_RES, STATUS_UNR);
-
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LOU_RES, STATUS_UNR);
     } else if (logged_in_fd == -1) {
         // User registered but not logged in
-        response = default_res(LOU_RES, STATUS_NOK);
-
-    } else {
-        // User registered and logged in
-        int right_password = check_password(pass_fd, password);
-
-        if (right_password == -1) {
-            response = default_res(LOU_RES, STATUS_ERR);
-        } else if (right_password) {
-            // Correct password, logging out
-            response = default_res(LOU_RES, STATUS_OK);
-            n = remove(logged_in_filename);
-            if (n == -1)
-                response = default_res(LOU_RES, STATUS_ERR);
-        } else {
-            // Failed password
-            response = default_res(LOU_RES, STATUS_ERR);
-        }
-
-        response = default_res(LOU_RES, STATUS_OK);
-        n = remove(logged_in_filename);
-        if (n == -1)
-            response = default_res(LOU_RES, STATUS_ERR);
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LOU_RES, STATUS_NOK);
     }
 
+    // User registered and logged in
+    int right_password = check_password(pass_fd, password);
+    if (right_password == -1) {
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LOU_RES, STATUS_ERR);
+    } else if (right_password) {
+        // Correct password, logging out
+        n = remove(logged_in_filename);
+        if (n == -1) {
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(LOU_RES, STATUS_ERR);
+        }
+
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(LOU_RES, STATUS_OK);
+    }
+
+    // Wrong password
     free(pass_filename);
     free(logged_in_filename);
-    return response;
+    return default_res(LOU_RES, STATUS_ERR);
 }
 
 char *unregister(char *uid, char *password) {
@@ -188,47 +178,47 @@ char *unregister(char *uid, char *password) {
 
     if (pass_fd == -1) {
         // User is not registered yet
-        response = default_res(UNR_RES, STATUS_UNR);
-
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(UNR_RES, STATUS_UNR);
     } else if (logged_in_fd == -1) {
         // User registered but not logged in
-        response = default_res(UNR_RES, STATUS_NOK);
-
-    } else {
-        // User registered and logged in
-        int right_password = check_password(pass_fd, password);
-
-        if (right_password == -1) {
-            response = default_res(UNR_RES, STATUS_ERR);
-        } else if (right_password) {
-            // Correct password, unregistering
-            response = default_res(UNR_RES, STATUS_OK);
-
-            n = remove(logged_in_filename);
-            if (n == -1) {
-                response = default_res(UNR_RES, STATUS_ERR);
-            }
-
-            n = remove(pass_filename);
-            if (n == -1) {
-                response = default_res(UNR_RES, STATUS_ERR);
-            }
-
-        } else {
-            // Failed password
-            response = default_res(UNR_RES, STATUS_ERR);
-        }
-
-        response = default_res(UNR_RES, STATUS_OK);
-        n = remove(logged_in_filename);
-        if (n == -1) {
-            response = default_res(UNR_RES, STATUS_ERR);
-        }
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(UNR_RES, STATUS_NOK);
     }
 
+    // User registered and logged in
+    int right_password = check_password(pass_fd, password);
+    if (right_password == -1) {
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(UNR_RES, STATUS_ERR);
+    } else if (right_password) {
+        // Correct password, unregistering
+        n = remove(logged_in_filename);
+        if (n == -1) {
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(UNR_RES, STATUS_ERR);
+        }
+
+        n = remove(pass_filename);
+        if (n == -1) {
+            free(pass_filename);
+            free(logged_in_filename);
+            return default_res(UNR_RES, STATUS_ERR);
+        }
+
+        free(pass_filename);
+        free(logged_in_filename);
+        return default_res(UNR_RES, STATUS_OK);
+    }
+
+    // Failed password
     free(pass_filename);
     free(logged_in_filename);
-    return response;
+    return default_res(UNR_RES, STATUS_ERR);
 }
 
 char *open_auc(char *name, char *asset_fname, char *start_value,
@@ -262,16 +252,39 @@ void treat_request(char *request, int socket) {
     case LIN: {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
+
         parse_lin(request, uid, pass);
         response = login(uid, pass);
-        printf("%s\n", response);
+        if (verbose)
+            printf("%s\n", response);
+
         send_udp(socket, response, NULL);
         break;
     }
-    case LOU:
+    case LOU: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+
+        parse_lou(request, uid, pass);
+        response = logout(uid, pass);
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
         break;
-    case UNR:
+    }
+    case UNR: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+
+        parse_unr(request, uid, pass);
+        response = unregister(uid, pass);
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
         break;
+    }
     case LMA:
         break;
     case LMB:

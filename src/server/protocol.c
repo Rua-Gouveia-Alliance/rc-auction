@@ -39,6 +39,18 @@ void parse_lin(char *msg, char *uid, char *password) {
     msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
 }
 
+void parse_lou(char *msg, char *uid, char *password) {
+    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
+    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
+}
+
+void parse_unr(char *msg, char *uid, char *password) {
+    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
+    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
+}
+
 char *default_res(char *code, char *status) {
     // setup buffer
     char *msg = malloc((RES_SIZE + 1) * sizeof(char));

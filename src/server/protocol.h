@@ -100,6 +100,10 @@ int interpret_req(char *msg);
 
 void parse_lin(char *msg, char *uid, char *password);
 
+void parse_lou(char *msg, char *uid, char *password);
+
+void parse_unr(char *msg, char *uid, char *password);
+
 char *default_res(char *res, char *status);
 
 char *open_auction_req(char *res, char *status, char *list);
