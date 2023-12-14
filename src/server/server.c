@@ -13,6 +13,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 static char asport[] = "58012"; // 58000 + group number
@@ -226,7 +227,96 @@ char *open_auc(char *name, char *asset_fname, char *start_value,
     return NULL;
 }
 
-char *close_auc(char *aid) { return NULL; }
+char *close_auc(char* uid, char* password, char *aid) {
+    int pass_fd, logged_in_fd, n;
+    char *response, *pass_filename, *logged_in_filename;
+
+    pass_filename =
+        get_filename(USERS_DIR, uid, PASS_FILENAME_EXT, PASS_FILENAME_SIZE);
+    logged_in_filename = get_filename(USERS_DIR, uid, LOGGED_IN_FILENAME_EXT,
+                                      LOGGED_IN_FILENAME_SIZE);
+
+    pass_fd = open(pass_filename, O_RDONLY);
+    logged_in_fd = open(logged_in_filename, O_RDONLY);
+
+    free(pass_filename);
+    free(logged_in_filename);
+
+    if (pass_fd == -1) {
+        // User is not registered yet
+        return default_res(CLS_RES, STATUS_NOK);
+    } else if (logged_in_fd == -1) {
+        // User registered but not logged in
+        return default_res(CLS_RES, STATUS_NLG);
+    }
+
+    // User registered and logged in
+    int right_password = check_password(pass_fd, password);
+    if (right_password == -1) {
+        return default_res(CLS_RES, STATUS_NOK);
+    } else if (right_password) {
+        // Correct password, going to remove auction
+        ssize_t n;
+        struct stat sb;
+        int start_fd, end_fd;
+        char* dirname, *start_filename, *end_filename, *right_uid;
+
+        dirname = get_filename(AUCTIONS_DIR, aid, "", AUCTION_DIRNAME_SIZE);
+        if (!(stat(dirname, &sb) == 0 && S_ISDIR(sb.st_mode))) {
+            // Auction does not exist
+            free(dirname);
+            return default_res(CLS_RES, STATUS_EAU);
+        }
+
+        start_filename = get_filename(dirname, "", START_FILENAME, START_FILENAME_SIZE);
+        end_filename = get_filename(dirname, "", END_FILENAME, END_FILENAME_SIZE);
+        end_fd = open(end_filename, O_RDONLY);
+        start_fd = open(start_filename, O_RDONLY);
+
+        free(start_filename);
+        free(dirname);
+
+        if (start_fd == - 1) {
+            // Failed to open START.txt
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_ERR);
+        }
+
+        right_uid = (char*)malloc(sizeof(char)*(UID_SIZE + 1));
+        if (right_uid == NULL) {
+            free(end_filename);
+            printf("No more memory, shutting down.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        n = read(start_fd, right_uid, UID_SIZE);
+        if (n == -1) {
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_ERR);
+        }
+
+        right_uid[UID_SIZE] = '\0';
+        if (strcmp(uid, right_uid) != 0) {
+            // Auction not owned by user
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_EOW);
+        }
+
+        if (end_fd != - 1) {
+            // Auction already closed
+            free(end_filename);
+            return default_res(CLS_RES, STATUS_END);
+        }
+
+        // Closing auction
+        end_fd = open(end_filename, O_CREAT);
+        free(end_filename);
+        return default_res(CLS_RES, STATUS_OK);
+    }
+
+    // Failed password
+    return default_res(CLS_RES, STATUS_NOK);
+}
 
 char *myauctions() { return NULL; }
 
@@ -337,6 +427,7 @@ void handle_sockets() {
             // TODO: timeout
             break;
         case -1:
+            printf("Socket select failed\n");
             exit(EXIT_FAILURE);
             break;
         default:

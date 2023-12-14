@@ -9,4 +9,6 @@ bool is_alphanumeric(const char *str);
 
 char *get_filename(char *dir, char *id, char *ext, int size);
 
+int rmrf(char *path);
+
 #endif
