@@ -3,6 +3,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+<<<<<<< HEAD
 #define AS_DIR "ASDIR"
 
 #define USERS_DIR_SIZE 12
@@ -35,4 +36,6 @@
 
 #define START_CONTENTS_SIZE (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 + DUR_SIZE + 1 + DATE_TIME_SIZE)
 
+=======
+>>>>>>> 8ef66859a586002d4ff6117bb4019e49fb70c8da
 #endif
