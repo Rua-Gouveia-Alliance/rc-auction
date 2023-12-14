@@ -1,5 +1,7 @@
+#define _XOPEN_SOURCE 500
 #include "util.h"
 #include <ctype.h>
+#include <ftw.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,4 +46,18 @@ bool path_exists(char *path) {
     if (stat(path, &st) == -1)
         return false;
     return true;
+}
+
+int nftw_remove(const char *path, const struct stat *sb, int typeflag,
+                struct FTW *ftwbuf) {
+    int rv = remove(path);
+
+    if (rv)
+        perror(path);
+
+    return rv;
+}
+
+int rmrf(char *path) {
+    return nftw(path, nftw_remove, 64, FTW_DEPTH | FTW_PHYS);
 }

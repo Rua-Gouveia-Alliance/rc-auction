@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -90,7 +91,30 @@ char *open_auc(char *name, char *asset_fname, char *start_value,
     return NULL;
 }
 
-char *close_auc(char *aid) { return NULL; }
+char *close_auc(char *uid, char *password, char *aid) {
+    char *response;
+    ssize_t n;
+    struct stat sb;
+    int start_fd, end_fd;
+    char *dirname, *start_filename, *end_filename, *right_uid;
+
+    if (!user_registered(uid))
+        return default_res(CLS_RES, STATUS_NOK);
+    else if (!user_loggedin(uid))
+        return default_res(CLS_RES, STATUS_NLG);
+    else if (!user_ok_password(uid, password))
+        return default_res(CLS_RES, STATUS_NOK);
+    else if (!auction_exists(aid))
+        return default_res(CLS_RES, STATUS_EAU);
+    else if (!auction_is_owner(aid, uid))
+        return default_res(CLS_RES, STATUS_EOW);
+    else if (auction_closed(aid))
+        return default_res(CLS_RES, STATUS_END);
+
+    if (auction_close(aid) == -1)
+        return default_res(CLS_RES, STATUS_ERR);
+    return default_res(CLS_RES, STATUS_OK);
+}
 
 char *myauctions() { return NULL; }
 
@@ -201,6 +225,7 @@ void handle_sockets() {
             // TODO: timeout
             break;
         case -1:
+            printf("Socket select failed\n");
             exit(EXIT_FAILURE);
             break;
         default:

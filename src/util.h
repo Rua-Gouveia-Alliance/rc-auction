@@ -11,4 +11,6 @@ char *get_filename(char *dir, char *id, char *ext);
 
 bool path_exists(char *path);
 
+int rmrf(char *path);
+
 #endif

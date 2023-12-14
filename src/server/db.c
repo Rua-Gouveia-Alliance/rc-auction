@@ -138,14 +138,22 @@ char *user_password(char *uid) {
     int fd, n;
 
     fd = open(pass_user, O_RDONLY);
-    if (fd == -1)
-        return NULL;
-
-    n = read(fd, pass, PASS_SIZE);
-    if (n == -1) {
+    if (fd == -1) {
+        free(user);
+        free(pass_user);
         free(pass);
         return NULL;
     }
+
+    n = read(fd, pass, PASS_SIZE);
+    if (n == -1) {
+        free(user);
+        free(pass_user);
+        free(pass);
+        return NULL;
+    }
+    free(user);
+    free(pass_user);
     return pass;
 }
 
@@ -160,3 +168,84 @@ bool user_ok_password(char *uid, char *password) {
 }
 
 char *auction_dir(char *aid) { return get_filename(AUCTIONS_DIR, aid, "/"); }
+
+bool auction_exits(char *aid) {
+    char *auction = auction_dir(aid);
+
+    if (path_exists(auction)) {
+        free(auction);
+        return true;
+    }
+    free(auction);
+    return false;
+}
+
+char *auction_info(char *aid) {
+    char *auction = auction_dir(aid);
+    char *start = get_filename(auction, aid, START_SUFIX);
+    char *info = malloc((INFO_SIZE) * sizeof(char));
+    int fd, n;
+
+    fd = open(start, INFO_SIZE);
+    if (fd == -1) {
+        free(auction);
+        free(start);
+        free(info);
+        return NULL;
+    }
+
+    n = read(fd, start, INFO_SIZE);
+    if (n == -1) {
+        free(auction);
+        free(start);
+        free(info);
+        return NULL;
+    }
+    return info;
+}
+
+char *auction_uid(char *aid) {
+    char *info = auction_info(aid);
+    if (info == NULL)
+        return NULL;
+
+    char *uid = malloc((UID_SIZE + 1) * sizeof(char));
+    strncpy(uid, info, UID_SIZE);
+
+    free(info);
+    return uid;
+}
+
+bool auction_is_owner(char *aid, char *uid) {
+    char *right_uid = auction_uid(aid);
+    if (right_uid == NULL)
+        return false;
+
+    bool result = (strcmp(right_uid, uid) == 0);
+    free(right_uid);
+    return result;
+}
+
+bool auction_closed(char *aid) {
+    char *auction = auction_dir(aid);
+    char *end = get_filename(auction, aid, END_SUFIX);
+    if (path_exists(end)) {
+        free(auction);
+        free(end);
+        return true;
+    }
+    free(auction);
+    free(end);
+    return false;
+}
+
+int auction_close(char *aid) {
+    char *auction = auction_dir(aid);
+    char *end = get_filename(auction, aid, END_SUFIX);
+    int err;
+
+    err = open(end, O_CREAT | O_WRONLY, DEFAULT_PERMS);
+    free(auction);
+    free(end);
+    return err;
+}
