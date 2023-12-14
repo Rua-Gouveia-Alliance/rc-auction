@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 bool is_numeric(const char *str) {
     while (*str) {
@@ -25,14 +28,20 @@ bool is_alphanumeric(const char *str) {
     return true; // Return true if all characters are alphanumeric
 }
 
-char *get_filename(char *dir, char *id, char *ext, int size) {
-    char *filename = (char *)malloc((size + 1) * sizeof(char));
-    memset(filename, 0, (size + 1) * sizeof(char));
-    if (filename == NULL) {
-        printf("No more memory, shutting down.\n");
-        exit(EXIT_FAILURE);
-    }
+char *get_filename(char *dir, char *id, char *ext) {
+    int total_size = strlen(dir) + strlen(id) + strlen(ext);
+    char *filename = (char *)malloc((total_size + 1) * sizeof(char));
+    memset(filename, 0, (total_size + 1) * sizeof(char));
 
-    sprintf(filename, "%s%s%s", dir, id, ext);
+    strcpy(filename, dir);
+    strcpy(filename + strlen(dir), id);
+    strcpy(filename + strlen(dir) + strlen(id), ext);
     return filename;
+}
+
+bool path_exists(char *path) {
+    struct stat st = {0};
+    if (stat(path, &st) == -1)
+        return false;
+    return true;
 }

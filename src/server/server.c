@@ -1,6 +1,7 @@
 #include "server.h"
 #include "../util.h"
 #include "connection.h"
+#include "db.h"
 #include "protocol.h"
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -18,207 +19,70 @@
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
 
-int check_password(int pass_fd, char *password) {
-    ssize_t n;
-    char *recorded_pass;
-    bool right_password;
-
-    recorded_pass = (char *)malloc(PASS_SIZE + 1);
-    if (recorded_pass == NULL) {
-        printf("No more memory, shutting down.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    n = read(pass_fd, recorded_pass, PASS_SIZE);
-    if (n == -1) {
-        free(recorded_pass);
-        return -1;
-    }
-
-    recorded_pass[PASS_SIZE] = '\0';
-    right_password = strcmp(recorded_pass, password) == 0;
-    free(recorded_pass);
-
-    return right_password;
-}
-
 char *login(char *uid, char *password) {
-    ssize_t n;
-    int pass_fd, logged_in_fd;
-    char *response, *pass_filename, *logged_in_filename;
+    char *response;
 
-    pass_filename =
-        get_filename(USERS_DIR, uid, PASS_FILENAME_EXT, PASS_FILENAME_SIZE);
-    logged_in_filename = get_filename(USERS_DIR, uid, LOGGED_IN_FILENAME_EXT,
-                                      LOGGED_IN_FILENAME_SIZE);
-
-    pass_fd = open(pass_filename, O_RDONLY);
-    logged_in_fd = open(logged_in_filename, O_RDONLY);
-
-    if (pass_fd == -1) {
-        // User is not registered yet
-        pass_fd = open(pass_filename, O_CREAT | O_WRONLY, 0666);
-        if (pass_fd == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
+    if (!user_registered(uid)) {
+        if (user_register(uid, password) == -1)
             return default_res(LIN_RES, STATUS_ERR);
-        }
 
-        n = write(pass_fd, password, strlen(password));
-        if (n == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
+        if (user_login(uid) == -1)
             return default_res(LIN_RES, STATUS_ERR);
-        }
 
-        logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
-        if (logged_in_fd == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
-            return default_res(LIN_RES, STATUS_ERR);
-        }
-
-        free(pass_filename);
-        free(logged_in_filename);
         return default_res(LIN_RES, STATUS_REG);
-    } else if (logged_in_fd == -1) {
-        // User registered but not logged in
-        int right_password = check_password(pass_fd, password);
-        if (right_password == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
-            return default_res(LIN_RES, STATUS_ERR);
-        } else if (right_password) {
-            // Correct password, logging in
-            logged_in_fd = open(logged_in_filename, O_CREAT, 0666);
-            if (logged_in_fd == -1) {
-                free(pass_filename);
-                free(logged_in_filename);
+    } else if (!user_loggedin(uid)) {
+        if (user_ok_password(uid, password)) {
+            if (user_login(uid) == -1)
                 return default_res(LIN_RES, STATUS_ERR);
-            }
 
-            free(pass_filename);
-            free(logged_in_filename);
             return default_res(LIN_RES, STATUS_OK);
         }
 
         // Failed password
-        free(pass_filename);
-        free(logged_in_filename);
         return default_res(LIN_RES, STATUS_NOK);
     }
 
     // User registered and already logged in
-    free(pass_filename);
-    free(logged_in_filename);
     return default_res(LIN_RES, STATUS_OK);
 }
 
 char *logout(char *uid, char *password) {
-    int pass_fd, logged_in_fd, n;
-    char *response, *pass_filename, *logged_in_filename;
+    char *response;
 
-    pass_filename =
-        get_filename(USERS_DIR, uid, PASS_FILENAME_EXT, PASS_FILENAME_SIZE);
-    logged_in_filename = get_filename(USERS_DIR, uid, LOGGED_IN_FILENAME_EXT,
-                                      LOGGED_IN_FILENAME_SIZE);
-
-    pass_fd = open(pass_filename, O_RDONLY);
-    logged_in_fd = open(logged_in_filename, O_RDONLY);
-
-    if (pass_fd == -1) {
-        // User is not registered yet
-        free(pass_filename);
-        free(logged_in_filename);
+    if (!user_registered(uid))
         return default_res(LOU_RES, STATUS_UNR);
-    } else if (logged_in_fd == -1) {
-        // User registered but not logged in
-        free(pass_filename);
-        free(logged_in_filename);
+    else if (!user_loggedin(uid))
         return default_res(LOU_RES, STATUS_NOK);
-    }
 
     // User registered and logged in
-    int right_password = check_password(pass_fd, password);
-    if (right_password == -1) {
-        free(pass_filename);
-        free(logged_in_filename);
-        return default_res(LOU_RES, STATUS_ERR);
-    } else if (right_password) {
-        // Correct password, logging out
-        n = remove(logged_in_filename);
-        if (n == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
+    if (user_ok_password(uid, password)) {
+        if (user_logout(uid) == -1)
             return default_res(LOU_RES, STATUS_ERR);
-        }
 
-        free(pass_filename);
-        free(logged_in_filename);
         return default_res(LOU_RES, STATUS_OK);
     }
 
     // Wrong password
-    free(pass_filename);
-    free(logged_in_filename);
     return default_res(LOU_RES, STATUS_ERR);
 }
 
 char *unregister(char *uid, char *password) {
-    int pass_fd, logged_in_fd, n;
-    char *response, *pass_filename, *logged_in_filename;
+    char *response;
 
-    pass_filename =
-        get_filename(USERS_DIR, uid, PASS_FILENAME_EXT, PASS_FILENAME_SIZE);
-    logged_in_filename = get_filename(USERS_DIR, uid, LOGGED_IN_FILENAME_EXT,
-                                      LOGGED_IN_FILENAME_SIZE);
-
-    pass_fd = open(pass_filename, O_RDONLY);
-    logged_in_fd = open(logged_in_filename, O_RDONLY);
-
-    if (pass_fd == -1) {
-        // User is not registered yet
-        free(pass_filename);
-        free(logged_in_filename);
+    if (!user_registered(uid))
         return default_res(UNR_RES, STATUS_UNR);
-    } else if (logged_in_fd == -1) {
-        // User registered but not logged in
-        free(pass_filename);
-        free(logged_in_filename);
-        return default_res(UNR_RES, STATUS_NOK);
-    }
-
-    // User registered and logged in
-    int right_password = check_password(pass_fd, password);
-    if (right_password == -1) {
-        free(pass_filename);
-        free(logged_in_filename);
+    else if (!user_ok_password(uid, password))
         return default_res(UNR_RES, STATUS_ERR);
-    } else if (right_password) {
-        // Correct password, unregistering
-        n = remove(logged_in_filename);
-        if (n == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
-            return default_res(UNR_RES, STATUS_ERR);
-        }
+    else if (!user_loggedin(uid))
+        return default_res(UNR_RES, STATUS_NOK);
 
-        n = remove(pass_filename);
-        if (n == -1) {
-            free(pass_filename);
-            free(logged_in_filename);
-            return default_res(UNR_RES, STATUS_ERR);
-        }
+    if (user_logout(uid) == -1)
+        return default_res(UNR_RES, STATUS_ERR);
 
-        free(pass_filename);
-        free(logged_in_filename);
-        return default_res(UNR_RES, STATUS_OK);
-    }
+    if (user_unregister(uid) == -1)
+        return default_res(UNR_RES, STATUS_ERR);
 
-    // Failed password
-    free(pass_filename);
-    free(logged_in_filename);
-    return default_res(UNR_RES, STATUS_ERR);
+    return default_res(UNR_RES, STATUS_OK);
 }
 
 char *open_auc(char *name, char *asset_fname, char *start_value,
@@ -367,6 +231,7 @@ void handle_sockets() {
 }
 
 int main(int argc, char *argv[]) {
+    create_defaults();
 
     int opt;
     while ((opt = getopt(argc, argv, "p:v")) != -1) {
