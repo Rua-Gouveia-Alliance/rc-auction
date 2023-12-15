@@ -1,5 +1,5 @@
-#define _XOPEN_SOURCE 500
 #include "util.h"
+#include "server/db.h"
 #include <ctype.h>
 #include <ftw.h>
 #include <stdbool.h>
@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 bool is_numeric(const char *str) {
@@ -48,16 +49,13 @@ bool path_exists(char *path) {
     return true;
 }
 
-int nftw_remove(const char *path, const struct stat *sb, int typeflag,
-                struct FTW *ftwbuf) {
-    int rv = remove(path);
-
-    if (rv)
-        perror(path);
-
-    return rv;
-}
-
-int rmrf(char *path) {
-    return nftw(path, nftw_remove, 64, FTW_DEPTH | FTW_PHYS);
+char *time_to_str(time_t time) {
+    char *time_str = malloc((DATE_TIME_SIZE + 1) * sizeof(char));
+    struct tm *current_time = gmtime(&time);
+    sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d",
+            current_time->tm_year + 1900, current_time->tm_mon + 1,
+            current_time->tm_mday, current_time->tm_hour, current_time->tm_min,
+            current_time->tm_sec);
+    time_str[DATE_TIME_SIZE] = '\0';
+    return time_str;
 }

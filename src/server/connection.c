@@ -50,7 +50,7 @@ TCPInfo *get_tcpinfo(int fd) {
 
     tcpconn = new_tcpconn(fd);
     if (tcpconn != -1)
-        return tcp_conns + new_tcpconn(fd);
+        return tcp_conns + tcpconn;
     return NULL;
 }
 
@@ -158,8 +158,10 @@ char *receive_tcp(int tcp_sock) {
     }
 
     tcp_info->buffer_i += n;
-    if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n')
+    if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n') {
+        rm_tcpconn(tcp_sock);
         return tcp_info->buffer;
+    }
 
     return NULL;
 }

@@ -1,12 +1,19 @@
 #ifndef DB_H
 #define DB_H
 
+#include "protocol.h"
 #include <stdbool.h>
+#include <time.h>
 
-#define DEFAULT_PERMS 0700
+#define DEFAULT_PERMS 0600
 
-// TODO: 128??
-#define INFO_SIZE 128
+#define DATE_SIZE 10
+#define TIME_SIZE 8
+#define DATE_TIME_SIZE (DATE_SIZE + 1 + TIME_SIZE)
+#define SECS_SIZE 10
+#define INFO_SIZE                                                              \
+    (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 +      \
+     DUR_SIZE + 1 + DATE_TIME_SIZE)
 
 #define DB_DIR "DB/"
 #define USERS_DIR DB_DIR "USERS/"
@@ -36,9 +43,20 @@ bool user_ok_password(char *uid, char *password);
 char *auction_dir(char *aid);
 bool auction_exists(char *aid);
 char *auction_info(char *aid);
+int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
+                       char *start_value, char *timeactive,
+                       char *start_datetime, char *start_fulltime);
 char *auction_uid(char *aid);
+char *auction_name(char *aid);
+char *auction_asset_fname(char *aid);
+int auction_start_value(char *aid);
+int auction_time_active(char *aid);
+char *auction_start_datetime(char *aid);
+time_t auction_start_fulltime(char *aid);
 bool auction_is_owner(char *aid, char *uid);
 bool auction_closed(char *aid);
-int auction_close(char *aid);
+int auction_close(char *aid, char *datetime, int elapsed);
+int auction_close_now(char *aid);
+int auction_update(char *aid);
 
 #endif
