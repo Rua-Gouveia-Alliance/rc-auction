@@ -25,16 +25,16 @@ static bool verbose = true;     // TODO: default is false
 char *login(char *uid, char *password) {
     if (!user_registered(uid)) {
         if (user_register(uid, password) == -1)
-            return default_res(LIN_RES, STATUS_ERR);
+            return server_error_res();
 
         if (user_login(uid) == -1)
-            return default_res(LIN_RES, STATUS_ERR);
+            return server_error_res();
 
         return default_res(LIN_RES, STATUS_REG);
     } else if (!user_loggedin(uid)) {
         if (user_ok_password(uid, password)) {
             if (user_login(uid) == -1)
-                return default_res(LIN_RES, STATUS_ERR);
+                return server_error_res();
 
             return default_res(LIN_RES, STATUS_OK);
         }
@@ -54,28 +54,28 @@ char *logout(char *uid, char *password) {
     // User registered and logged in
     if (user_ok_password(uid, password)) {
         if (user_logout(uid) == -1)
-            return default_res(LOU_RES, STATUS_ERR);
+            return server_error_res();
 
         return default_res(LOU_RES, STATUS_OK);
     }
 
     // Wrong password
-    return default_res(LOU_RES, STATUS_ERR);
+    return default_res(LOU_RES, STATUS_ERR); // TODO: Decidir o que responder aqui
 }
 
 char *unregister(char *uid, char *password) {
     if (!user_registered(uid))
         return default_res(UNR_RES, STATUS_UNR);
     else if (!user_ok_password(uid, password))
-        return default_res(UNR_RES, STATUS_ERR);
+        return default_res(UNR_RES, STATUS_ERR); // TODO: Decidir o que responder aqui
     else if (!user_loggedin(uid))
         return default_res(UNR_RES, STATUS_NOK);
 
     if (user_logout(uid) == -1)
-        return default_res(UNR_RES, STATUS_ERR);
+        return server_error_res();
 
     if (user_unregister(uid) == -1)
-        return default_res(UNR_RES, STATUS_ERR);
+        return server_error_res();
 
     return default_res(UNR_RES, STATUS_OK);
 }
@@ -91,7 +91,7 @@ char *open_auc(char *uid, char *password, char *name, char *start_value,
         return default_res(OPA_RES, STATUS_NOK);
 
     if ((aid = auction_open(uid, name, start_value, timeactive, fname)) == NULL)
-        return default_res(OPA_RES, STATUS_ERR);
+        return server_error_res();
     response = opa_ok_res(aid);
     free(aid);
     return response;
@@ -112,7 +112,7 @@ char *close_auc(char *uid, char *password, char *aid) {
         return default_res(CLS_RES, STATUS_END);
 
     if (auction_close_now(aid) == -1)
-        return default_res(CLS_RES, STATUS_ERR);
+        return server_error_res();
     return default_res(CLS_RES, STATUS_OK);
 }
 
@@ -181,16 +181,16 @@ char *bid(char* uid, char* password, char *aid, char *value) {
     else if (!user_loggedin(uid))
         return default_res(BID_RES, STATUS_NLG);
     else if (!user_ok_password(uid, password))
-        return default_res(BID_RES, STATUS_ERR);
+        return default_res(BID_RES, STATUS_ERR); // TODO: Decidir o que responder aqui
     else if ((value_ok = bid_value_ok(aid, value)) == -1)
-        return default_res(BID_RES, STATUS_ERR);
+        return server_error_res();
     else if (!value_ok)
         return default_res(BID_RES, STATUS_REF);
     else if (auction_is_owner(aid, uid))
         return default_res(BID_RES, STATUS_ILG);
 
     if (make_bid(uid, aid, value) == -1)
-        return default_res(BID_RES, STATUS_ERR);
+        return server_error_res();
 
     return default_res(BID_RES, STATUS_OK);
 }
@@ -213,7 +213,7 @@ void treat_request(char *request, int socket) {
         if (parse_lin(request, uid, pass) != -1)
             response = login(uid, pass);
         else
-            response = default_res(LIN_RES, STATUS_ERR);
+            response = bad_syntax_res();
 
         if (verbose)
             printf("%s\n", response);
@@ -228,7 +228,7 @@ void treat_request(char *request, int socket) {
         if (parse_lou(request, uid, pass) != -1)
             response = logout(uid, pass);
         else
-            response = default_res(LOU_RES, STATUS_ERR);
+            response = bad_syntax_res();
 
         if (verbose)
             printf("%s\n", response);
@@ -243,7 +243,7 @@ void treat_request(char *request, int socket) {
         if (parse_unr(request, uid, pass) != -1)
             response = unregister(uid, pass);
         else
-            response = default_res(UNR_RES, STATUS_ERR);
+            response = bad_syntax_res();
 
         if (verbose)
             printf("%s\n", response);
@@ -262,7 +262,7 @@ void treat_request(char *request, int socket) {
         if (parse_opa(request, uid, pass, name, start_value, timeactive, fname) != -1)
             response = open_auc(uid, pass, name, start_value, timeactive, fname);
         else
-            response = default_res(OPA_RES, STATUS_ERR);
+            response = bad_syntax_res();
 
         if (verbose)
             printf("%s\n", response);
@@ -279,7 +279,7 @@ void treat_request(char *request, int socket) {
         if (parse_cls(request, uid, pass, aid) != -1)
             response = close_auc(uid, pass, aid);
         else
-            response = default_res(CLS_RES, STATUS_ERR);
+            response = bad_syntax_res();
 
         if (verbose)
             printf("%s\n", response);

@@ -22,6 +22,17 @@ bool is_numeric(const char *str) {
     }
     return true; // Return true if all characters are digits
 }
+// ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+
+bool is_lowercase(const char *str) {
+    while (*str) {
+        if (!(*str >= 'a' && *str <= 'z')) {
+            return false; // Return false if any character is not alphanumeric
+        }
+        str++;
+    }
+    return true; // Return true if all characters are alphanumeric
+}
 
 bool is_alphanumeric(const char *str) {
     while (*str) {

@@ -116,4 +116,8 @@ char *opa_ok_res(char *aid);
 
 char *list_res(char *code, char* list);
 
+char* server_error_res();
+
+char* bad_syntax_res();
+
 #endif

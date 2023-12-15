@@ -34,6 +34,25 @@ int interpret_req(char *msg) {
         return -1;
 }
 
+bool valid_fname(char* fname) {
+    char* token;
+    
+    if (strlen(fname) < 5 || strlen(fname) > 24)
+        return false;
+
+    // File name
+    token = strtok(fname, ".");
+    if (strlen(token) < 1 || !is_alphanumeric(token))
+        return false;
+
+    // File extension
+    token = strtok(NULL, " ");
+    if (strlen(token) != 3 || !is_lowercase(token))
+        return false;
+
+    return true;
+}
+
 bool valid_aid(char* aid) {
     if (!is_numeric(aid))
         return false;
@@ -232,6 +251,20 @@ char *list_res(char *code, char* list) {
     strcpy(&msg[CODE_SIZE + 1 + 2 + 1], list);
     msg[msg_size] = '\n';
 
+    return msg;
+}
+
+char* bad_syntax_res() {
+    char *msg = malloc((CODE_SIZE + 2) * sizeof(char));
+    memset(msg, 0, (CODE_SIZE + 2) * sizeof(char));
+    strcpy(msg, STATUS_ERR);
+    return msg;
+}
+
+char* server_error_res() {
+    char *msg = malloc((CODE_SIZE + 2) * sizeof(char));
+    memset(msg, 0, (CODE_SIZE + 2) * sizeof(char));
+    strcpy(msg, STATUS_ERR);
     return msg;
 }
 
