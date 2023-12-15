@@ -34,30 +34,113 @@ int interpret_req(char *msg) {
         return -1;
 }
 
+bool valid_uid(char* uid) {
+    return is_numeric(uid) && strlen(uid) == UID_SIZE;
+}
+
+bool valid_password(char* password) {
+    return is_alphanumeric(password) && strlen(password) == PASS_SIZE;
+}
+
 int parse_lin(char *msg, char *uid, char *password) {
+    int last_pos = strlen(msg) - 1;
+    char *token;
+
+    // check \n
+    if (msg[last_pos] != '\n') {
+        return -1;
+    }
+    msg[last_pos] = '\0'; // replace \n with \0
+
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
-    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
-    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    token = strtok(msg, " ");
+
+    // UID
+    token = strtok(NULL, " ");
+    if (!valid_uid(token))
+        return -1;
+
+    strncpy(uid, token, UID_SIZE);
+    uid[UID_SIZE] = '\0';
+
+    // password
+    token = strtok(NULL, " ");
+    if (!valid_password(token))
+        return -1;
+
+    strncpy(password, token, PASS_SIZE);
+    password[PASS_SIZE] = '\0';
+
     return 0;
 }
 
 int parse_lou(char *msg, char *uid, char *password) {
+    int last_pos = strlen(msg) - 1;
+    char *token;
+
+    // check \n
+    if (msg[last_pos] != '\n') {
+        return -1;
+    }
+    msg[last_pos] = '\0'; // replace \n with \0
+
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
-    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
-    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    token = strtok(msg, " ");
+
+    // UID
+    token = strtok(NULL, " ");
+    if (!valid_uid(token))
+        return -1;
+
+    strncpy(uid, token, UID_SIZE);
+    uid[UID_SIZE] = '\0';
+
+    // password
+    token = strtok(NULL, " ");
+    if (!valid_password(token))
+        return -1;
+
+    strncpy(password, token, PASS_SIZE);
+    password[PASS_SIZE] = '\0';
+
     return 0;
 }
 
 int parse_unr(char *msg, char *uid, char *password) {
+    int last_pos = strlen(msg) - 1;
+    char *token;
+
+    // check \n
+    if (msg[last_pos] != '\n') {
+        return -1;
+    }
+    msg[last_pos] = '\0'; // replace \n with \0
+
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
-    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
-    strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    token = strtok(msg, " ");
+
+    // UID
+    token = strtok(NULL, " ");
+    if (!valid_uid(token))
+        return -1;
+
+    strncpy(uid, token, UID_SIZE);
+    uid[UID_SIZE] = '\0';
+
+    // password
+    token = strtok(NULL, " ");
+    if (!valid_password(token))
+        return -1;
+
+    strncpy(password, token, PASS_SIZE);
+    password[PASS_SIZE] = '\0';
+
     return 0;
 }
 
