@@ -343,10 +343,20 @@ void handle_sockets() {
                             (struct timeval *)&timeout);
 
         switch (out_select) {
-        case 0:
-            // TODO: timeout
-            // fechar conexao se for filho tcp e mandar err
+        case 0: {
+            // timeout
+            for (int i = 0; i < FD_SETSIZE; i++) {
+                if (FD_ISSET(i, &ready_sockets)) {
+                    if (i != tcp_main && i != udp_sock) {
+                        char *bad_syntax = bad_syntax_res();
+                        send_tcp(i, bad_syntax);
+                        free(bad_syntax);
+                        FD_CLR(i, &current_sockets);
+                    }
+                }
+            }
             break;
+        }
         case -1:
             printf("error: socket select failed\n");
             exit(EXIT_FAILURE);
@@ -370,9 +380,8 @@ void handle_sockets() {
                                 free(buffer);
                                 FD_CLR(i, &current_sockets);
                             } else {
-                                if (treat_request(buffer, i)) {
+                                if (treat_request(buffer, i))
                                     FD_CLR(i, &current_sockets);
-                                }
                             }
                         }
                     }
