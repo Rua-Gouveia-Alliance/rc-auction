@@ -34,6 +34,14 @@ int interpret_req(char *msg) {
         return -1;
 }
 
+bool valid_aid(char* aid) {
+    if (!is_numeric(aid))
+        return false;
+
+    int parsed_aid = atoi(aid);
+    return parsed_aid > 0 && parsed_aid < 100;
+}
+
 bool valid_uid(char* uid) {
     return is_numeric(uid) && strlen(uid) == UID_SIZE;
 }
@@ -167,14 +175,46 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     return 0;
 }
 
-int parse_cls(char *msg, char *uid, char *pass, char *aid) {
+int parse_cls(char *msg, char *uid, char *password, char *aid) {
+    int last_pos = strlen(msg) - 1;
+    char *token;
+
+    // check \n
+    if (msg[last_pos] != '\n') {
+        return -1;
+    }
+    msg[last_pos] = '\0'; // replace \n with \0
+
     memset(uid, 0, UID_SIZE + 1);
-    memset(pass, 0, PASS_SIZE + 1);
+    memset(password, 0, PASS_SIZE + 1);
     memset(aid, 0, AID_SIZE + 1);
 
-    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
-    strncpy(pass, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
-    strncpy(aid, msg + CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1, AID_SIZE);
+    token = strtok(msg, " ");
+
+    // UID
+    token = strtok(NULL, " ");
+    if (!valid_uid(token))
+        return -1;
+
+    strncpy(uid, token, UID_SIZE);
+    uid[UID_SIZE] = '\0';
+
+    // password
+    token = strtok(NULL, " ");
+    if (!valid_password(token))
+        return -1;
+
+    strncpy(password, token, PASS_SIZE);
+    password[PASS_SIZE] = '\0';
+
+    // AID
+    token = strtok(NULL, " ");
+    if (!valid_aid(token))
+        return -1;
+
+    strncpy(aid, token, AID_SIZE);
+    password[AID_SIZE] = '\0';
+
     return 0;
 }
 
