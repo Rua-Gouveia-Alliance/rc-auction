@@ -90,6 +90,23 @@ void parse_cls(char *msg, char *uid, char *pass, char *aid) {
     strncpy(aid, msg + CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1, AID_SIZE);
 }
 
+char *list_res(char *code, char* list) {
+    // setup buffer
+    int msg_size = CODE_SIZE + 1 + 2 + 1 + strlen(list);
+    char *msg = malloc((msg_size + 1) * sizeof(char));
+    memset(msg, 0, (msg_size + 1) * sizeof(char));
+
+    // copy data
+    strcpy(msg, code);
+    msg[CODE_SIZE] = ' ';
+    strcpy(&msg[CODE_SIZE + 1], "OK");
+    msg[CODE_SIZE + 1 + 2] = ' ';
+    strcpy(&msg[CODE_SIZE + 1 + 2 + 1], list);
+    msg[msg_size] = '\n';
+
+    return msg;
+}
+
 char *default_res(char *code, char *status) {
     // setup buffer
     char *msg = malloc((RES_SIZE + 1) * sizeof(char));

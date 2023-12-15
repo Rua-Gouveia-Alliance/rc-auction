@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <dirent.h>
 
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
@@ -115,9 +116,28 @@ char *close_auc(char *uid, char *password, char *aid) {
     return default_res(CLS_RES, STATUS_OK);
 }
 
-char *myauctions() { return NULL; }
+char *user_auctions(char* uid) { 
+    if (!user_registered(uid))
+        return default_res(LMA_REQ, STATUS_NLG);
+    else if (!user_loggedin(uid))
+        return default_res(LMA_REQ, STATUS_NLG);
 
-char *mybids() { return NULL; }
+    char* dir = user_hosted_dir(uid);
+    if (count_entries(dir, DT_REG) == 0) {
+        free(dir);
+        return default_res(LMA_REQ, STATUS_NOK);
+    }
+
+    char* auctions = list_auctions(dir, DEFAULT_LIMIT);
+    char* response = list_res(LMA_RES, auctions);
+    
+    free(dir);
+    free(auctions);
+
+    return response;
+}
+
+char *user_bids(char* uid) { return NULL; }
 
 char *list() { return NULL; }
 

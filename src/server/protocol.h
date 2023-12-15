@@ -114,4 +114,6 @@ char *default_res(char *res, char *status);
 
 char *opa_ok_res(char *aid);
 
+char *list_res(char *code, char* list);
+
 #endif

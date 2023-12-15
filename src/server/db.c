@@ -219,7 +219,7 @@ char* get_auction_state(char* aid) {
     return auction_state;
 }
 
-char* list_auctions(char* dir_path) {
+char* list_auctions(char* dir_path, int limit) {
     DIR *dir;
     struct dirent *entry;
 
@@ -239,13 +239,13 @@ char* list_auctions(char* dir_path) {
     }
 
     char* auctions = (char*)malloc(sizeof(char)*auction_count*(AUCTION_STATE_SIZE + 1));
-    while ((entry = readdir(dir)) != NULL) {
+    while (((entry = readdir(dir)) != NULL) && i < limit) {
         if (entry->d_type == DT_REG) { // Check if it's the desired type
             char* aid = remove_extension(entry->d_name);
             char* auction_state = get_auction_state(aid);
             strcpy(auctions + i, auction_state);
-            (auctions + i)[AUCTION_STATE_SIZE] = ' ';
-            i += AUCTION_STATE_SIZE + 1;
+            (auctions + i*(AUCTION_STATE_SIZE+1))[AUCTION_STATE_SIZE] = ' ';
+            i++;
             free(auction_state);
             free(aid);
         }

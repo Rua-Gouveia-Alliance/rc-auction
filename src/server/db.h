@@ -70,8 +70,8 @@ int auction_update(char *aid);
 int auction_count();
 char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                    char *fname);
-char** get_hosted(char* uid);
 int make_bid(char* uid, char* aid, char* value);
 int bid_value_ok(char* aid, char* value);
+char* list_auctions(char* dir_path, int limit);
 
 #endif
