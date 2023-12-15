@@ -54,7 +54,7 @@
 #define LST 5
 #define LST_REQ "LST\n"
 #define LST_SIZE (CODE_SIZE + 1)
-#define RLS_OK "RLS OK "
+#define LST_RES "RLS "
 
 #define SRC 6
 #define SRC_REQ "SRC"

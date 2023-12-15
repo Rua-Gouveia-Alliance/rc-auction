@@ -240,14 +240,19 @@ char* list_auctions(char* dir_path, int limit) {
 
     char* auctions = (char*)malloc(sizeof(char)*auction_count*(AUCTION_STATE_SIZE + 1));
     while (((entry = readdir(dir)) != NULL) && i < limit) {
-        if (entry->d_type == DT_REG) { // Check if it's the desired type
-            char* aid = remove_extension(entry->d_name);
-            char* auction_state = get_auction_state(aid);
+        if (strcmp(entry->d_name, "..") != 0 && strcmp(entry->d_name, ".") != 0) {
+            char* auction_state;
+            if (entry->d_type == DT_REG) {
+                char* aid = remove_extension(entry->d_name);
+                auction_state = get_auction_state(aid);                
+                free(aid);
+            } else if (entry->d_type == DT_DIR) {
+                auction_state = get_auction_state(entry->d_name);                
+            }
             strcpy(auctions + i, auction_state);
             (auctions + i*(AUCTION_STATE_SIZE+1))[AUCTION_STATE_SIZE] = ' ';
             i++;
             free(auction_state);
-            free(aid);
         }
     }
 

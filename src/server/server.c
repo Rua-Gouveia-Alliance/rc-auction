@@ -118,14 +118,14 @@ char *close_auc(char *uid, char *password, char *aid) {
 
 char *user_auctions(char* uid) { 
     if (!user_registered(uid))
-        return default_res(LMA_REQ, STATUS_NLG);
+        return default_res(LMA_RES, STATUS_NLG);
     else if (!user_loggedin(uid))
-        return default_res(LMA_REQ, STATUS_NLG);
+        return default_res(LMA_RES, STATUS_NLG);
 
     char* dir = user_hosted_dir(uid);
     if (count_entries(dir, DT_REG) == 0) {
         free(dir);
-        return default_res(LMA_REQ, STATUS_NOK);
+        return default_res(LMA_RES, STATUS_NOK);
     }
 
     char* auctions = list_auctions(dir, DEFAULT_LIMIT);
@@ -139,14 +139,14 @@ char *user_auctions(char* uid) {
 
 char *user_bids(char* uid) {
     if (!user_registered(uid))
-        return default_res(LMB_REQ, STATUS_NLG);
+        return default_res(LMB_RES, STATUS_NLG);
     else if (!user_loggedin(uid))
-        return default_res(LMB_REQ, STATUS_NLG);
+        return default_res(LMB_RES, STATUS_NLG);
 
     char* dir = user_bidded_dir(uid);
     if (count_entries(dir, DT_REG) == 0) {
         free(dir);
-        return default_res(LMB_REQ, STATUS_NOK);
+        return default_res(LMB_RES, STATUS_NOK);
     }
 
     char* auctions = list_auctions(dir, DEFAULT_LIMIT);
@@ -158,7 +158,19 @@ char *user_bids(char* uid) {
     return response;
 }
 
-char *list() { return NULL; }
+char *list() {
+    char* dir = AUCTIONS_DIR;
+    if (count_entries(dir, DT_REG) == 0) {
+        return default_res(LST_RES, STATUS_NOK);
+    }
+
+    char* auctions = list_auctions(dir, NO_LIMIT);
+    char* response = list_res(LST_RES, auctions);
+
+    free(auctions);
+
+    return response;
+}
 
 char *show_asset(char *aid) { return NULL; }
 
