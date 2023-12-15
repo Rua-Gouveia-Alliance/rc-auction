@@ -130,14 +130,33 @@ char *user_auctions(char* uid) {
 
     char* auctions = list_auctions(dir, DEFAULT_LIMIT);
     char* response = list_res(LMA_RES, auctions);
-    
+
     free(dir);
     free(auctions);
 
     return response;
 }
 
-char *user_bids(char* uid) { return NULL; }
+char *user_bids(char* uid) {
+    if (!user_registered(uid))
+        return default_res(LMB_REQ, STATUS_NLG);
+    else if (!user_loggedin(uid))
+        return default_res(LMB_REQ, STATUS_NLG);
+
+    char* dir = user_bidded_dir(uid);
+    if (count_entries(dir, DT_REG) == 0) {
+        free(dir);
+        return default_res(LMB_REQ, STATUS_NOK);
+    }
+
+    char* auctions = list_auctions(dir, DEFAULT_LIMIT);
+    char* response = list_res(LMB_RES, auctions);
+
+    free(dir);
+    free(auctions);
+
+    return response;
+}
 
 char *list() { return NULL; }
 
