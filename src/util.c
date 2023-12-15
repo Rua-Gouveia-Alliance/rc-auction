@@ -22,6 +22,17 @@ bool is_numeric(const char *str) {
     }
     return true; // Return true if all characters are digits
 }
+// ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+
+bool is_lowercase(const char *str) {
+    while (*str) {
+        if (!(*str >= 'a' && *str <= 'z')) {
+            return false; // Return false if any character is not alphanumeric
+        }
+        str++;
+    }
+    return true; // Return true if all characters are alphanumeric
+}
 
 bool is_alphanumeric(const char *str) {
     while (*str) {
@@ -92,4 +103,12 @@ int count_entries(char *path, int type) {
 
     closedir(dir);
     return count;
+}
+
+char* remove_extension(char* file) {
+    int name_size = strlen(file) - 4;
+    char* file_name = (char*)malloc(sizeof(char)*(name_size + 1));
+    strncpy(file_name, file, name_size);
+    file_name[name_size] = '\0';
+    return file_name;
 }

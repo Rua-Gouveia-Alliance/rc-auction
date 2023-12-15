@@ -54,7 +54,7 @@
 #define LST 5
 #define LST_REQ "LST\n"
 #define LST_SIZE (CODE_SIZE + 1)
-#define RLS_OK "RLS OK "
+#define LST_RES "RLS "
 
 #define SRC 6
 #define SRC_REQ "SRC"
@@ -117,5 +117,11 @@ int parse_cls(char *msg, char *uid, char *pass, char *aid);
 char *default_res(char *res, char *status);
 
 char *opa_ok_res(char *aid);
+
+char *list_res(char *code, char *list);
+
+char *server_error_res();
+
+char *bad_syntax_res();
 
 #endif

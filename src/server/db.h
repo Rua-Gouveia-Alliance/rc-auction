@@ -15,6 +15,8 @@
     (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 +      \
      DUR_SIZE + 1 + DATE_TIME_SIZE)
 #define BID_VALUE_SIZE 6
+#define BID_INFO_LEN (6 + 1 + 6 + DATE_TIME_SIZE + SECS_SIZE)
+#define AUCTION_STATE_SIZE (AID_SIZE + 1 + 1)
 
 #define DB_DIR "DB/"
 #define USERS_DIR DB_DIR "USERS/"
@@ -68,8 +70,8 @@ int auction_update(char *aid);
 int auction_count();
 char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                    char *fname);
-char** get_hosted(char* uid);
 int make_bid(char* uid, char* aid, char* value);
-bool bid_value_ok(char* aid, char* value);
+int bid_value_ok(char* aid, char* value);
+char* list_auctions(char* dir_path, int limit);
 
 #endif
