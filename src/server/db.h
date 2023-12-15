@@ -24,6 +24,7 @@
 #define AUCTIONS_DIR DB_DIR "AUCTIONS/"
 #define START_SUFIX "_start.txt"
 #define END_SUFIX "_end.txt"
+#define TXT_SUFIX ".txt"
 #define BIDS_DIR "BIDS/"
 
 int create_defaults();

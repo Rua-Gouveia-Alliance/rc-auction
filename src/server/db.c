@@ -408,6 +408,12 @@ char *auction_new_info(char *uid, char *name, char *asset_fname,
 
 int auction_count() { return count_subdirs(AUCTIONS_DIR); }
 
+int add_to_hosted(char* uid, char* aid) {
+    char *hosted_dir = user_hosted_dir(uid), *hosted_file = get_filename(hosted_dir, aid, TXT_SUFIX);
+    int fd = open(hosted_file, O_CREAT);
+    return fd;
+}
+
 char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                    char *fname) {
     int fd, auction_i;
@@ -423,7 +429,6 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
     if (path_exists(auction)) {
         free(aid);
         free(auction);
-        auction_i--;
         return NULL;
     }
     char *bids = auction_bids_dir(aid);
@@ -440,7 +445,6 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(auction);
         free(bids);
         free(start);
-        auction_i--;
         return NULL;
     }
 
@@ -460,7 +464,21 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(start_datetime);
         free(info);
         close(fd);
-        auction_i--;
+        return NULL;
+    }
+
+    n = add_to_hosted(uid, aid);
+    if (n == -1) {
+        remove(start);
+        remove(auction);
+        remove(bids);
+        free(aid);
+        free(auction);
+        free(bids);
+        free(start);
+        free(start_datetime);
+        free(info);
+        close(fd);
         return NULL;
     }
 
