@@ -68,7 +68,7 @@ char *i_to_aid(int i) {
     return aid;
 }
 
-int count_subdirs(char *path) {
+int count_entries(char *path, int type) {
     DIR *dir;
     struct dirent *entry;
     int count = 0;
@@ -82,7 +82,7 @@ int count_subdirs(char *path) {
 
     // Read directory entries
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR) { // Check if it's a directory
+        if (entry->d_type == type) { // Check if it's the desired type
             if (strcmp(entry->d_name, ".") != 0 &&
                 strcmp(entry->d_name, "..") != 0) {
                 count++;

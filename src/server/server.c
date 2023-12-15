@@ -37,11 +37,9 @@ char *login(char *uid, char *password) {
 
             return default_res(LIN_RES, STATUS_OK);
         }
-
         // Failed password
         return default_res(LIN_RES, STATUS_NOK);
     }
-
     // User registered and already logged in
     return default_res(LIN_RES, STATUS_OK);
 }
@@ -99,7 +97,6 @@ char *open_auc(char *uid, char *password, char *name, char *start_value,
 }
 
 char *close_auc(char *uid, char *password, char *aid) {
-    auction_update(aid);
     if (!user_registered(uid))
         return default_res(CLS_RES, STATUS_NOK);
     else if (!user_loggedin(uid))
@@ -126,7 +123,23 @@ char *list() { return NULL; }
 
 char *show_asset(char *aid) { return NULL; }
 
-char *bid(char *aid, char *value) { return NULL; }
+char *bid(char* uid, char* password, char *aid, char *value) {
+    if (auction_closed(aid))
+        return default_res(BID_RES, STATUS_NOK);
+    else if (!user_loggedin(uid))
+        return default_res(BID_RES, STATUS_NLG);
+    else if (!user_ok_password(uid, password))
+        return default_res(BID_RES, STATUS_ERR);
+    else if (!bid_value_ok(aid, value))
+        return default_res(BID_RES, STATUS_REF);
+    else if (auction_is_owner(aid, uid))
+        return default_res(BID_RES, STATUS_ILG);
+
+    if (make_bid(uid, aid, value) == -1)
+        return default_res(BID_RES, STATUS_ERR);
+
+    return default_res(BID_RES, STATUS_OK);
+}
 
 char *show_record(char *aid) { return NULL; }
 

@@ -16,6 +16,6 @@ char *time_to_str(time_t time);
 
 char *i_to_aid(int i);
 
-int count_subdirs(char *path);
+int count_entries(char *path, int type);
 
 #endif
