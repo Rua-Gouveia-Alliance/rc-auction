@@ -1,6 +1,7 @@
 #include "db.h"
 #include "../util.h"
 #include "protocol.h"
+#include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <dirent.h>
 
 int create_defaults() {
     if (!path_exists(DB_DIR))
@@ -33,8 +33,9 @@ char *user_bidded_dir(char *uid) {
     return bidded;
 }
 
-int add_to_user_bidded(char* uid, char* aid) {
-    char *bidded_dir = user_bidded_dir(uid), *bidded_file = get_filename(bidded_dir, aid, TXT_SUFIX);
+int add_to_user_bidded(char *uid, char *aid) {
+    char *bidded_dir = user_bidded_dir(uid),
+         *bidded_file = get_filename(bidded_dir, aid, TXT_SUFIX);
     int fd = open(bidded_file, O_CREAT);
     free(bidded_dir);
     free(bidded_file);
@@ -182,10 +183,10 @@ bool user_ok_password(char *uid, char *password) {
     return result;
 }
 
-int set_current_bid(char* aid, char* value) {
+int set_current_bid(char *aid, char *value) {
     ssize_t n;
-    char* dir = auction_dir(aid);
-    char* bid_filename = get_filename(dir, CURRENT_BID, TXT_SUFIX);
+    char *dir = auction_dir(aid);
+    char *bid_filename = get_filename(dir, CURRENT_BID, TXT_SUFIX);
     int fd = open(bid_filename, O_CREAT | O_WRONLY);
     if (fd == -1) {
         free(bid_filename);
@@ -201,14 +202,14 @@ int set_current_bid(char* aid, char* value) {
 
     if (n == -1)
         return -1;
-    
+
     return 1;
 }
 
-char** get_hosted(char* uid) {
+char **get_hosted(char *uid) {
     DIR *dir;
     struct dirent *entry;
-    char* hosted_dir = user_hosted_dir(uid);
+    char *hosted_dir = user_hosted_dir(uid);
     int hosted_count = count_entries(hosted_dir, DT_REG);
     if (hosted_count == 0) {
         free(hosted_dir);
@@ -225,10 +226,10 @@ char** get_hosted(char* uid) {
 
     // Read directory entries
     int i = 0;
-    char** hosted = (char**)malloc(sizeof(char*)*hosted_count);
+    char **hosted = (char **)malloc(sizeof(char *) * hosted_count);
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) { // Check if it's the desired type
-            char* aid = (char*)malloc(sizeof(char)*(AID_SIZE+1));
+            char *aid = (char *)malloc(sizeof(char) * (AID_SIZE + 1));
             strncpy(aid, entry->d_name, AID_SIZE);
             aid[AID_SIZE] = '\0';
             hosted[i++] = aid;
@@ -475,8 +476,9 @@ char *auction_new_info(char *uid, char *name, char *asset_fname,
 
 int auction_count() { return count_entries(AUCTIONS_DIR, DT_DIR); }
 
-int add_to_hosted(char* uid, char* aid) {
-    char *hosted_dir = user_hosted_dir(uid), *hosted_file = get_filename(hosted_dir, aid, TXT_SUFIX);
+int add_to_hosted(char *uid, char *aid) {
+    char *hosted_dir = user_hosted_dir(uid),
+         *hosted_file = get_filename(hosted_dir, aid, TXT_SUFIX);
     int fd = open(hosted_file, O_CREAT);
     free(hosted_dir);
     free(hosted_file);
@@ -550,7 +552,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         close(fd);
         return NULL;
     }
-    
+
     n = set_current_bid(aid, start_value);
     if (n == -1) {
         remove(start);
@@ -575,15 +577,13 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
     return aid;
 }
 
-int get_current_bid(char* aid) {
-    return 0;
-}
+int get_current_bid(char *aid) { return 0; }
 
-bool bid_value_ok(char* aid, char* value) {
+bool bid_value_ok(char *aid, char *value) {
     return atoi(value) > get_current_bid(aid);
 }
 
-int make_bid(char* uid, char* aid, char* value) {
+int make_bid(char *uid, char *aid, char *value) {
     // add to bids
     // add to bidded
     // set current bid

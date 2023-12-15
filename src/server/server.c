@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -82,12 +83,13 @@ char *unregister(char *uid, char *password) {
 char *open_auc(char *uid, char *password, char *name, char *start_value,
                char *timeactive, char *fname) {
     char *aid, *response;
-    if (!user_registered(uid))
+    if (!user_registered(uid)) {
         return default_res(OPA_RES, STATUS_NOK);
-    else if (!user_loggedin(uid))
+    } else if (!user_loggedin(uid))
         return default_res(OPA_RES, STATUS_NLG);
-    else if (!user_ok_password(uid, password))
+    else if (!user_ok_password(uid, password)) {
         return default_res(OPA_RES, STATUS_NOK);
+    }
 
     if ((aid = auction_open(uid, name, start_value, timeactive, fname)) == NULL)
         return default_res(OPA_RES, STATUS_ERR);
@@ -123,7 +125,7 @@ char *list() { return NULL; }
 
 char *show_asset(char *aid) { return NULL; }
 
-char *bid(char* uid, char* password, char *aid, char *value) {
+char *bid(char *uid, char *password, char *aid, char *value) {
     if (auction_closed(aid))
         return default_res(BID_RES, STATUS_NOK);
     else if (!user_loggedin(uid))
@@ -143,7 +145,7 @@ char *bid(char* uid, char* password, char *aid, char *value) {
 
 char *show_record(char *aid) { return NULL; }
 
-void treat_request(char *request, int socket) {
+bool treat_request(char *request, int socket) {
     int id;
     char *response;
 
@@ -196,12 +198,18 @@ void treat_request(char *request, int socket) {
         char timeactive[TIME_SIZE + 1];
         char fname[FNAME_SIZE + 1];
 
-        parse_opa(request, uid, pass, name, start_value, timeactive, fname);
+        parse_opa(request, uid, pass, name, start_value, timeactive, fname,
+                  NULL);
         response = open_auc(uid, pass, name, start_value, timeactive, fname);
         if (verbose)
             printf("%s\n", response);
 
-        send_udp(socket, response, NULL);
+        if (is_roa_ok(response)) {
+            free(request);
+            return prepare_freceive(socket, true, response);
+        } else {
+            return prepare_freceive(socket, false, response);
+        }
         break;
     }
     case CLS: {
@@ -235,7 +243,7 @@ void treat_request(char *request, int socket) {
 
     free(response);
     free(request);
-    return;
+    return true;
 }
 
 void handle_sockets() {
@@ -265,7 +273,7 @@ void handle_sockets() {
             // TODO: timeout
             break;
         case -1:
-            printf("Socket select failed\n");
+            printf("error: socket select failed\n");
             exit(EXIT_FAILURE);
             break;
         default:
@@ -283,8 +291,14 @@ void handle_sockets() {
                     } else {
                         buffer = receive_tcp(i);
                         if (buffer != NULL) {
-                            FD_CLR(i, &current_sockets);
-                            treat_request(buffer, i);
+                            if (buffer[0] == '\n') {
+                                free(buffer);
+                                FD_CLR(i, &current_sockets);
+                            } else {
+                                if (treat_request(buffer, i)) {
+                                    FD_CLR(i, &current_sockets);
+                                }
+                            }
                         }
                     }
                 }
