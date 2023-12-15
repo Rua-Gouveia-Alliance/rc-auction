@@ -18,4 +18,6 @@ char *i_to_aid(int i);
 
 int count_entries(char *path, int type);
 
+char* remove_extension(char* file);
+
 #endif

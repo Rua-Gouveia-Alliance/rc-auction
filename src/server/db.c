@@ -210,38 +210,46 @@ int set_current_bid(char* aid, char* value) {
     return 1;
 }
 
-char** get_hosted(char* uid) {
+char* get_auction_state(char* aid) {
+    char* auction_state = (char*)malloc(sizeof(char)*(AUCTION_STATE_SIZE + 1)); 
+    int active = !auction_closed(aid);
+
+    sprintf(auction_state, "%s %d", aid, active);
+
+    return auction_state;
+}
+
+char** list_auctions(char* dir_path) {
     DIR *dir;
     struct dirent *entry;
-    char* hosted_dir = user_hosted_dir(uid);
-    int hosted_count = count_entries(hosted_dir, DT_REG);
-    if (hosted_count == 0) {
-        free(hosted_dir);
-        return NULL;
-    }
 
     // Open the directory
-    dir = opendir(hosted_dir);
+    dir = opendir(dir_path);
     if (dir == NULL) {
-        fprintf(stderr, "Error opening directory %s\n", hosted_dir);
-        free(hosted_dir);
+        fprintf(stderr, "Error opening directory %s\n", dir_path);
         return NULL;
     }
 
     // Read directory entries
     int i = 0;
-    char** hosted = (char**)malloc(sizeof(char*)*hosted_count);
+    int auction_count = count_entries(dir_path, DT_REG);
+    if (auction_count == -1) {
+        closedir(dir);
+        return NULL;
+    }
+
+    char** auctions = (char**)malloc(sizeof(char*)*auction_count);
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) { // Check if it's the desired type
-            char* aid = (char*)malloc(sizeof(char)*(AID_SIZE+1));
-            strncpy(aid, entry->d_name, AID_SIZE);
-            aid[AID_SIZE] = '\0';
-            hosted[i++] = aid;
+            char* aid = remove_extension(entry->d_name);
+            char* auction_state = get_auction_state(aid);
+            auctions[i++] = auction_state;
+            free(aid);
         }
     }
 
-    free(hosted_dir);
-    return hosted;
+    closedir(dir);
+    return auctions;
 }
 
 char *auction_dir(char *aid) { return get_filename(AUCTIONS_DIR, aid, "/"); }

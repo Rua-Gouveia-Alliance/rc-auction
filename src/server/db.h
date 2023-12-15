@@ -16,6 +16,7 @@
      DUR_SIZE + 1 + DATE_TIME_SIZE)
 #define BID_VALUE_SIZE 6
 #define BID_INFO_LEN (6 + 1 + 6 + DATE_TIME_SIZE + SECS_SIZE)
+#define AUCTION_STATE_SIZE (AID_SIZE + 1 + 1)
 
 #define DB_DIR "DB/"
 #define USERS_DIR DB_DIR "USERS/"

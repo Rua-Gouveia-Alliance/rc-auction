@@ -93,3 +93,11 @@ int count_entries(char *path, int type) {
     closedir(dir);
     return count;
 }
+
+char* remove_extension(char* file) {
+    int name_size = strlen(file) - 4;
+    char* file_name = (char*)malloc(sizeof(char)*(name_size + 1));
+    strncpy(file_name, file, name_size);
+    file_name[name_size] = '\0';
+    return file_name;
+}
