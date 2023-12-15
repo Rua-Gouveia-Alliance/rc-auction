@@ -311,6 +311,7 @@ bool treat_request(char *request, int socket) {
     case SAS:
         break;
     default:
+        // responser err
         break;
     }
 
@@ -344,6 +345,7 @@ void handle_sockets() {
         switch (out_select) {
         case 0:
             // TODO: timeout
+            // fechar conexao se for filho tcp e mandar err
             break;
         case -1:
             printf("error: socket select failed\n");

@@ -279,7 +279,6 @@ bool prepare_freceive(int tcp_sock, bool keep, char *response) {
     size_t n;
 
     if (!keep) {
-        close(tcp_sock);
         send_tcp(tcp_sock, response);
         rm_tcpconn(tcp_sock);
         return true;
