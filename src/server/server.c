@@ -210,8 +210,11 @@ void treat_request(char *request, int socket) {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        parse_lin(request, uid, pass);
-        response = login(uid, pass);
+        if (parse_lin(request, uid, pass) != -1)
+            response = login(uid, pass);
+        else
+            response = default_res(LIN_RES, STATUS_ERR);
+
         if (verbose)
             printf("%s\n", response);
 
@@ -222,8 +225,11 @@ void treat_request(char *request, int socket) {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        parse_lou(request, uid, pass);
-        response = logout(uid, pass);
+        if (parse_lou(request, uid, pass) != -1)
+            response = logout(uid, pass);
+        else
+            response = default_res(LOU_RES, STATUS_ERR);
+
         if (verbose)
             printf("%s\n", response);
 
@@ -234,8 +240,11 @@ void treat_request(char *request, int socket) {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        parse_unr(request, uid, pass);
-        response = unregister(uid, pass);
+        if (parse_unr(request, uid, pass) != -1)
+            response = unregister(uid, pass);
+        else
+            response = default_res(UNR_RES, STATUS_ERR);
+
         if (verbose)
             printf("%s\n", response);
 
@@ -250,8 +259,11 @@ void treat_request(char *request, int socket) {
         char timeactive[TIME_SIZE + 1];
         char fname[FNAME_SIZE + 1];
 
-        parse_opa(request, uid, pass, name, start_value, timeactive, fname);
-        response = open_auc(uid, pass, name, start_value, timeactive, fname);
+        if (parse_opa(request, uid, pass, name, start_value, timeactive, fname) != -1)
+            response = open_auc(uid, pass, name, start_value, timeactive, fname);
+        else
+            response = default_res(OPA_RES, STATUS_ERR);
+
         if (verbose)
             printf("%s\n", response);
 
@@ -263,8 +275,12 @@ void treat_request(char *request, int socket) {
         char pass[PASS_SIZE + 1];
         char aid[AID_SIZE + 1];
 
-        parse_cls(request, uid, pass, aid);
-        response = close_auc(uid, pass, aid);
+
+        if (parse_cls(request, uid, pass, aid) != -1)
+            response = close_auc(uid, pass, aid);
+        else
+            response = default_res(CLS_RES, STATUS_ERR);
+
         if (verbose)
             printf("%s\n", response);
 

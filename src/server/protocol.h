@@ -99,16 +99,16 @@
 
 int interpret_req(char *msg);
 
-void parse_lin(char *msg, char *uid, char *password);
+int parse_lin(char *msg, char *uid, char *password);
 
-void parse_lou(char *msg, char *uid, char *password);
+int parse_lou(char *msg, char *uid, char *password);
 
-void parse_unr(char *msg, char *uid, char *password);
+int parse_unr(char *msg, char *uid, char *password);
 
-void parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
+int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
                char *timeactive, char *fname);
 
-void parse_cls(char *msg, char *uid, char *pass, char *aid);
+int parse_cls(char *msg, char *uid, char *pass, char *aid);
 
 char *default_res(char *res, char *status);
 

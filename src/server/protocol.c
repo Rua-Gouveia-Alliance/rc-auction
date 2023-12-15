@@ -34,31 +34,34 @@ int interpret_req(char *msg) {
         return -1;
 }
 
-void parse_lin(char *msg, char *uid, char *password) {
+int parse_lin(char *msg, char *uid, char *password) {
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    return 0;
 }
 
-void parse_lou(char *msg, char *uid, char *password) {
+int parse_lou(char *msg, char *uid, char *password) {
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    return 0;
 }
 
-void parse_unr(char *msg, char *uid, char *password) {
+int parse_unr(char *msg, char *uid, char *password) {
     memset(uid, 0, UID_SIZE + 1);
     memset(password, 0, PASS_SIZE + 1);
 
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    return 0;
 }
 
-void parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
+int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
                char *timeactive, char *fname) {
     memset(uid, 0, UID_SIZE + 1);
     memset(pass, 0, PASS_SIZE + 1);
@@ -78,9 +81,10 @@ void parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     strcpy(timeactive, token);
     token = strtok(NULL, " ");
     strcpy(fname, token);
+    return 0;
 }
 
-void parse_cls(char *msg, char *uid, char *pass, char *aid) {
+int parse_cls(char *msg, char *uid, char *pass, char *aid) {
     memset(uid, 0, UID_SIZE + 1);
     memset(pass, 0, PASS_SIZE + 1);
     memset(aid, 0, AID_SIZE + 1);
@@ -88,6 +92,7 @@ void parse_cls(char *msg, char *uid, char *pass, char *aid) {
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(pass, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
     strncpy(aid, msg + CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1, AID_SIZE);
+    return 0;
 }
 
 char *list_res(char *code, char* list) {
