@@ -28,60 +28,61 @@
 
 #define LIN 0
 #define LIN_REQ "LIN"
-#define LIN_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define LIN_SIZE (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define LIN_RES "RLI "
 
 #define LOU 1
 #define LOU_REQ "LOU"
-#define LOU_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define LOU_SIZE (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define LOU_RES "RLO "
 
 #define UNR 2
 #define UNR_REQ "UNR"
-#define UNR_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
+#define UNR_SIZE (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1)
 #define UNR_RES "RUR "
 
 #define LMA 3
 #define LMA_REQ "LMA"
-#define LMA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
+#define LMA_SIZE (CODE_SIZE + 1 + UID_SIZE + 1)
 #define LMA_RES "RMA "
 
 #define LMB 4
 #define LMB_REQ "LMB"
-#define LMB_SIZE (CMD_SIZE + 1 + UID_SIZE + 1)
+#define LMB_SIZE (CODE_SIZE + 1 + UID_SIZE + 1)
 #define LMB_RES "RMB "
 
 #define LST 5
 #define LST_REQ "LST\n"
-#define LST_SIZE (CMD_SIZE + 1)
+#define LST_SIZE (CODE_SIZE + 1)
 #define RLS_OK "RLS OK "
 
 #define SRC 6
 #define SRC_REQ "SRC"
-#define SRC_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
+#define SRC_SIZE (CODE_SIZE + 1 + AID_SIZE + 1)
 #define SRC_RES "RRC "
 
 #define CLS 7
 #define CLS_REQ "CLS"
-#define CLS_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
+#define CLS_SIZE (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 #define CLS_RES "RCL "
 
 #define BID 8
 #define BID_REQ "BID"
-#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
+#define BID_SIZE (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1)
 #define BID_RES "RBD "
 
 #define SAS 9
 #define SAS_REQ "SAS"
-#define SAS_SIZE (CMD_SIZE + 1 + AID_SIZE + 1)
+#define SAS_SIZE (CODE_SIZE + 1 + AID_SIZE + 1)
 #define SAS_RES "RSA "
 
 #define OPA 10
 #define OPA_REQ "OPA"
 #define OPA_SIZE                                                               \
-    (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 +             \
+    (CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 +            \
      START_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 #define OPA_RES "ROA "
+#define OPA_RES_SIZE (CODE_SIZE + 1 + STATUS_SIZE + 1 + AID_SIZE + 1)
 
 #define STATUS_OK "OK\n"
 #define STATUS_NOK "NOK\n"
@@ -104,12 +105,13 @@ void parse_lou(char *msg, char *uid, char *password);
 
 void parse_unr(char *msg, char *uid, char *password);
 
+void parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
+               char *timeactive, char *fname);
+
+void parse_cls(char *msg, char *uid, char *pass, char *aid);
+
 char *default_res(char *res, char *status);
 
-char *open_auction_req(char *res, char *status, char *list);
-
-char *auction_list_res(char *res, char *status, char *list);
-
-char *bid_list_res(char *res, char *status, char *list);
+char *opa_ok_res(char *aid);
 
 #endif

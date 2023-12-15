@@ -22,8 +22,6 @@ static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
 
 char *login(char *uid, char *password) {
-    char *response;
-
     if (!user_registered(uid)) {
         if (user_register(uid, password) == -1)
             return default_res(LIN_RES, STATUS_ERR);
@@ -49,8 +47,6 @@ char *login(char *uid, char *password) {
 }
 
 char *logout(char *uid, char *password) {
-    char *response;
-
     if (!user_registered(uid))
         return default_res(LOU_RES, STATUS_UNR);
     else if (!user_loggedin(uid))
@@ -69,8 +65,6 @@ char *logout(char *uid, char *password) {
 }
 
 char *unregister(char *uid, char *password) {
-    char *response;
-
     if (!user_registered(uid))
         return default_res(UNR_RES, STATUS_UNR);
     else if (!user_ok_password(uid, password))
@@ -87,18 +81,24 @@ char *unregister(char *uid, char *password) {
     return default_res(UNR_RES, STATUS_OK);
 }
 
-char *open_auc(char *name, char *asset_fname, char *start_value,
-               char *timeactive) {
-    return NULL;
+char *open_auc(char *uid, char *password, char *name, char *start_value,
+               char *timeactive, char *fname) {
+    char *aid, *response;
+    if (!user_registered(uid))
+        return default_res(OPA_RES, STATUS_NOK);
+    else if (!user_loggedin(uid))
+        return default_res(OPA_RES, STATUS_NLG);
+    else if (!user_ok_password(uid, password))
+        return default_res(OPA_RES, STATUS_NOK);
+
+    if ((aid = auction_open(uid, name, start_value, timeactive, fname)) == NULL)
+        return default_res(OPA_RES, STATUS_ERR);
+    response = opa_ok_res(aid);
+    free(aid);
+    return response;
 }
 
 char *close_auc(char *uid, char *password, char *aid) {
-    char *response;
-    ssize_t n;
-    struct stat sb;
-    int start_fd, end_fd;
-    char *dirname, *start_filename, *end_filename, *right_uid;
-
     auction_update(aid);
     if (!user_registered(uid))
         return default_res(CLS_RES, STATUS_NOK);
@@ -175,6 +175,35 @@ void treat_request(char *request, int socket) {
         send_udp(socket, response, NULL);
         break;
     }
+    case OPA: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+        char name[NAME_SIZE + 1];
+        char start_value[START_VAL_SIZE + 1];
+        char timeactive[TIME_SIZE + 1];
+        char fname[FNAME_SIZE + 1];
+
+        parse_opa(request, uid, pass, name, start_value, timeactive, fname);
+        response = open_auc(uid, pass, name, start_value, timeactive, fname);
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
+        break;
+    }
+    case CLS: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+        char aid[AID_SIZE + 1];
+
+        parse_cls(request, uid, pass, aid);
+        response = close_auc(uid, pass, aid);
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
+        break;
+    }
     case LMA:
         break;
     case LMB:
@@ -183,13 +212,9 @@ void treat_request(char *request, int socket) {
         break;
     case SRC:
         break;
-    case CLS:
-        break;
     case BID:
         break;
     case SAS:
-        break;
-    case OPA:
         break;
     default:
         break;

@@ -1,5 +1,6 @@
 #include "protocol.h"
 #include "../util.h"
+#include "db.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,21 +35,59 @@ int interpret_req(char *msg) {
 }
 
 void parse_lin(char *msg, char *uid, char *password) {
+    memset(uid, 0, UID_SIZE + 1);
+    memset(password, 0, PASS_SIZE + 1);
+
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
-    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
 }
 
 void parse_lou(char *msg, char *uid, char *password) {
+    memset(uid, 0, UID_SIZE + 1);
+    memset(password, 0, PASS_SIZE + 1);
+
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
-    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
 }
 
 void parse_unr(char *msg, char *uid, char *password) {
+    memset(uid, 0, UID_SIZE + 1);
+    memset(password, 0, PASS_SIZE + 1);
+
     strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
     strncpy(password, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
-    msg[CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE] = '\0';
+}
+
+void parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
+               char *timeactive, char *fname) {
+    memset(uid, 0, UID_SIZE + 1);
+    memset(pass, 0, PASS_SIZE + 1);
+    memset(name, 0, NAME_SIZE + 1);
+    memset(start_value, 0, START_VAL_SIZE + 1);
+    memset(timeactive, 0, TIME_SIZE + 1);
+
+    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
+    strncpy(pass, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+
+    char *token =
+        strtok(msg + CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1, " ");
+    strcpy(name, token);
+    token = strtok(NULL, " ");
+    strcpy(start_value, token);
+    token = strtok(NULL, " ");
+    strcpy(timeactive, token);
+    token = strtok(NULL, " ");
+    strcpy(fname, token);
+}
+
+void parse_cls(char *msg, char *uid, char *pass, char *aid) {
+    memset(uid, 0, UID_SIZE + 1);
+    memset(pass, 0, PASS_SIZE + 1);
+    memset(aid, 0, AID_SIZE + 1);
+
+    strncpy(uid, msg + CODE_SIZE + 1, UID_SIZE);
+    strncpy(pass, msg + CODE_SIZE + 1 + UID_SIZE + 1, PASS_SIZE);
+    strncpy(aid, msg + CODE_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1, AID_SIZE);
 }
 
 char *default_res(char *code, char *status) {
@@ -64,8 +103,15 @@ char *default_res(char *code, char *status) {
     return msg;
 }
 
-char *open_auction_res(char *res, char *status, char *list);
+char *opa_ok_res(char *aid) {
+    char *msg = malloc((OPA_RES_SIZE + 1) * sizeof(char));
+    memset(msg, 0, (OPA_RES_SIZE + 1) * sizeof(char));
 
-char *auction_list_res(char *res, char *status, char *list);
-
-char *bid_list_res(char *res, char *status, char *list);
+    strcpy(msg, OPA_RES);
+    msg[CODE_SIZE] = ' ';
+    strcpy(&msg[CODE_SIZE + 1], "OK");
+    msg[CODE_SIZE + 1 + 2] = ' ';
+    strcpy(&msg[CODE_SIZE + 1 + 2 + 1], aid);
+    msg[CODE_SIZE + 1 + 2 + 1 + AID_SIZE] = '\n';
+    return msg;
+}

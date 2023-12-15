@@ -20,7 +20,8 @@ int new_tcpconn(int fd) {
     for (int i = 0; i < MAX_TCP_COUNT; i++) {
         if (tcp_conns[i].socket_id == -1) {
             tcp_conns[i].socket_id = fd;
-            tcp_conns[i].buffer = malloc(DEFAULT_SIZE);
+            tcp_conns[i].buffer = malloc(DEFAULT_SIZE * sizeof(char));
+            memset(tcp_conns[i].buffer, 0, DEFAULT_SIZE * sizeof(char));
             return i;
         }
     }
@@ -130,6 +131,7 @@ char *receive_udp(int udp_sock) {
     ssize_t n;
     socklen_t addrlen;
     char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
+    memset(buffer, 0, DEFAULT_SIZE * sizeof(char));
 
     addrlen = sizeof(last_addr);
     n = recvfrom(udp_sock, buffer, DEFAULT_SIZE, 0,
@@ -158,10 +160,8 @@ char *receive_tcp(int tcp_sock) {
     }
 
     tcp_info->buffer_i += n;
-    if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n') {
-        rm_tcpconn(tcp_sock);
+    if (tcp_info->buffer[tcp_info->buffer_i - 1] == '\n')
         return tcp_info->buffer;
-    }
 
     return NULL;
 }

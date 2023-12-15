@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define DEFAULT_PERMS 0600
+#define DEFAULT_PERMS 0744
 
 #define DATE_SIZE 10
 #define TIME_SIZE 8
@@ -41,11 +41,15 @@ char *user_password(char *uid);
 bool user_ok_password(char *uid, char *password);
 
 char *auction_dir(char *aid);
+char *auction_bids_dir(char *aid);
 bool auction_exists(char *aid);
 char *auction_info(char *aid);
 int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
                        char *start_value, char *timeactive,
                        char *start_datetime, char *start_fulltime);
+char *auction_new_info(char *uid, char *name, char *asset_fname,
+                       char *start_value, char *timeactive,
+                       char *start_datetime, time_t start_fulltime);
 char *auction_uid(char *aid);
 char *auction_name(char *aid);
 char *auction_asset_fname(char *aid);
@@ -58,5 +62,8 @@ bool auction_closed(char *aid);
 int auction_close(char *aid, char *datetime, int elapsed);
 int auction_close_now(char *aid);
 int auction_update(char *aid);
+int auction_count();
+char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
+                   char *fname);
 
 #endif

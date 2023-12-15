@@ -81,6 +81,7 @@ int user_register(char *uid, char *password) {
     free(pass_user);
     free(bidded_dir);
     free(hosted_dir);
+    close(fd);
     return n;
 }
 
@@ -117,6 +118,8 @@ int user_login(char *uid) {
     err = open(login_user, O_CREAT | O_WRONLY, DEFAULT_PERMS);
     free(user);
     free(login_user);
+    if (err != -1)
+        close(err);
     return err;
 }
 
@@ -135,6 +138,7 @@ char *user_password(char *uid) {
     char *user = user_dir(uid);
     char *pass_user = get_filename(user, uid, PASS_SUFIX);
     char *pass = malloc((PASS_SIZE + 1) * sizeof(char));
+    memset(pass, 0, (PASS_SIZE + 1));
     int fd, n;
 
     fd = open(pass_user, O_RDONLY);
@@ -150,10 +154,12 @@ char *user_password(char *uid) {
         free(user);
         free(pass_user);
         free(pass);
+        close(fd);
         return NULL;
     }
     free(user);
     free(pass_user);
+    close(fd);
     return pass;
 }
 
@@ -168,6 +174,13 @@ bool user_ok_password(char *uid, char *password) {
 }
 
 char *auction_dir(char *aid) { return get_filename(AUCTIONS_DIR, aid, "/"); }
+
+char *auction_bids_dir(char *aid) {
+    char *auc = auction_dir(aid);
+    char *bids = get_filename(auc, BIDS_DIR, "");
+    free(auc);
+    return bids;
+}
 
 bool auction_exists(char *aid) {
     char *auction = auction_dir(aid);
@@ -184,9 +197,10 @@ char *auction_info(char *aid) {
     char *auction = auction_dir(aid);
     char *start = get_filename(auction, aid, START_SUFIX);
     char *info = malloc((INFO_SIZE + 1) * sizeof(char));
+    memset(info, 0, INFO_SIZE + 1);
     int fd, n;
 
-    fd = open(start, INFO_SIZE + 1);
+    fd = open(start, O_RDONLY);
     if (fd == -1) {
         free(auction);
         free(start);
@@ -194,13 +208,15 @@ char *auction_info(char *aid) {
         return NULL;
     }
 
-    n = read(fd, start, INFO_SIZE + 1);
+    n = read(fd, info, INFO_SIZE + 1);
     if (n == -1) {
         free(auction);
         free(start);
         free(info);
+        close(fd);
         return NULL;
     }
+    close(fd);
     return info;
 }
 
@@ -215,13 +231,14 @@ int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
     info = auction_info(aid);
     token = strtok(info, " ");
     for (int i = 0; token != NULL; i++) {
-        if (pointers[i] != NULL) {
+        if (pointers[i] != NULL)
             strcpy(pointers[i], token);
 
-            // datetime case
-            if (i == 5) {
-                token = strtok(NULL, " ");
-                if (token != NULL) {
+        // datetime case
+        if (i == 5) {
+            token = strtok(NULL, " ");
+            if (token != NULL) {
+                if (pointers[i] != NULL) {
                     pointers[i][DATE_SIZE] = ' ';
                     strcpy(pointers[i] + DATE_SIZE + 1, token);
                 }
@@ -236,6 +253,7 @@ int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
 
 char *auction_uid(char *aid) {
     char *uid = malloc((UID_SIZE + 1) * sizeof(char));
+    memset(uid, 0, UID_SIZE + 1);
     auction_parse_info(aid, uid, NULL, NULL, NULL, NULL, NULL, NULL);
     uid[UID_SIZE] = '\0';
     return uid;
@@ -338,6 +356,7 @@ int auction_close(char *aid, char *datetime, int elapsed) {
 
     free(auction);
     free(end);
+    close(fd);
     return written;
 }
 
@@ -368,4 +387,80 @@ int auction_update(char *aid) {
         return err;
     }
     return 0;
+}
+
+char *auction_new_info(char *uid, char *name, char *asset_fname,
+                       char *start_value, char *timeactive,
+                       char *start_datetime, time_t start_fulltime) {
+
+    char start_fulltime_str[20];
+    snprintf(start_fulltime_str, 20, "%ld", start_fulltime);
+    char *info = malloc((INFO_SIZE + 1) * sizeof(char));
+    memset(info, 0, (INFO_SIZE + 1) * sizeof(char));
+
+    sprintf(info, "%s %s %s %s %s %s %ld", uid, name, asset_fname, start_value,
+            timeactive, start_datetime, start_fulltime);
+    return info;
+}
+
+int auction_count() { return count_subdirs(AUCTIONS_DIR); }
+
+char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
+                   char *fname) {
+    int fd, auction_i;
+    size_t n;
+
+    auction_i = auction_count() + 1;
+    if (auction_i > 999 || auction_i < 1)
+        return NULL;
+
+    char *aid = i_to_aid(auction_i);
+    char *auction = auction_dir(aid);
+
+    if (path_exists(auction)) {
+        free(aid);
+        free(auction);
+        auction_i--;
+        return NULL;
+    }
+    char *bids = auction_bids_dir(aid);
+
+    mkdir(auction, DEFAULT_PERMS);
+    mkdir(bids, DEFAULT_PERMS);
+
+    char *start = get_filename(auction, aid, START_SUFIX);
+    fd = open(start, O_CREAT | O_WRONLY, DEFAULT_PERMS);
+    if (fd == -1) {
+        free(aid);
+        free(auction);
+        free(bids);
+        free(start);
+        auction_i--;
+        return NULL;
+    }
+
+    time_t now = time(NULL);
+    char *start_datetime = time_to_str(now);
+    char *info = auction_new_info(uid, name, fname, start_value, timeactive,
+                                  start_datetime, now);
+    n = write(fd, info, strlen(info));
+    if (n == -1) {
+        free(aid);
+        free(auction);
+        free(bids);
+        free(start);
+        free(start_datetime);
+        free(info);
+        close(fd);
+        auction_i--;
+        return NULL;
+    }
+
+    free(auction);
+    free(bids);
+    free(start);
+    free(start_datetime);
+    free(info);
+    close(fd);
+    return aid;
 }

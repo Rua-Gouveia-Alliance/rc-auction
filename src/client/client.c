@@ -183,7 +183,8 @@ void open_auc(char *name, char *asset_fname, char *start_value,
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
                       asset_fname, fsize);
-    response = send_file(asip, asport, request, strlen(request), asset_fname, DEFAULT_SIZE);
+    response = send_file(asip, asport, request, strlen(request), asset_fname,
+                         DEFAULT_SIZE);
 
     opa_res(response, true);
 

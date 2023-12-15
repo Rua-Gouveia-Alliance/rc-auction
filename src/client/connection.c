@@ -42,7 +42,7 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
 
     // send
     n = sendto(fd, msg, msg_size, 0, res->ai_addr, res->ai_addrlen);
-    if (n == -1){
+    if (n == -1) {
         printf("error: communication with server failed\n");
         exit(1);
     }
@@ -52,7 +52,7 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     n = recvfrom(fd, buffer, receive_size, 0, (struct sockaddr *)&addr,
                  &addrlen);
 
-    if (n == -1){
+    if (n == -1) {
         printf("error: communication with server failed\n");
         exit(1);
     }
@@ -290,6 +290,7 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
 
         written_bytes += n;
     }
+    write(fd, "\n", 1);
 
     n = read(fd, response, receive_size);
     if (n == -1) {

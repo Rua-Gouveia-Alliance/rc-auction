@@ -1,6 +1,8 @@
 #include "util.h"
 #include "server/db.h"
+#include "server/protocol.h"
 #include <ctype.h>
+#include <dirent.h>
 #include <ftw.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -58,4 +60,36 @@ char *time_to_str(time_t time) {
             current_time->tm_sec);
     time_str[DATE_TIME_SIZE] = '\0';
     return time_str;
+}
+
+char *i_to_aid(int i) {
+    char *aid = malloc((AID_SIZE + 1) * sizeof(char));
+    sprintf(aid, "%03d", i);
+    return aid;
+}
+
+int count_subdirs(char *path) {
+    DIR *dir;
+    struct dirent *entry;
+    int count = 0;
+
+    // Open the directory
+    dir = opendir(path);
+    if (dir == NULL) {
+        fprintf(stderr, "Error opening directory %s\n", path);
+        return -1;
+    }
+
+    // Read directory entries
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR) { // Check if it's a directory
+            if (strcmp(entry->d_name, ".") != 0 &&
+                strcmp(entry->d_name, "..") != 0) {
+                count++;
+            }
+        }
+    }
+
+    closedir(dir);
+    return count;
 }
