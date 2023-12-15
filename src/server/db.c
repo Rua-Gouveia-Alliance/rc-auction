@@ -370,6 +370,8 @@ int auction_close_now(char *aid) {
     start_time = auction_start_fulltime(aid);
 
     err = auction_close(aid, str_final_time, now - start_time);
+
+    free(str_final_time);
     return err;
 }
 
@@ -384,6 +386,7 @@ int auction_update(char *aid) {
         time_active = auction_time_active(aid);
         str_final_time = time_to_str(start_time + time_active);
         err = auction_close(aid, str_final_time, time_active);
+        free(str_final_time);
         return err;
     }
     return 0;
@@ -431,6 +434,8 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
     char *start = get_filename(auction, aid, START_SUFIX);
     fd = open(start, O_CREAT | O_WRONLY, DEFAULT_PERMS);
     if (fd == -1) {
+        remove(auction);
+        remove(bids);
         free(aid);
         free(auction);
         free(bids);
@@ -445,6 +450,9 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                                   start_datetime, now);
     n = write(fd, info, strlen(info));
     if (n == -1) {
+        remove(start);
+        remove(auction);
+        remove(bids);
         free(aid);
         free(auction);
         free(bids);
