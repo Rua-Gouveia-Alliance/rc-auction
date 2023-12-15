@@ -124,13 +124,16 @@ char *list() { return NULL; }
 char *show_asset(char *aid) { return NULL; }
 
 char *bid(char* uid, char* password, char *aid, char *value) {
+    int value_ok;
     if (auction_closed(aid))
         return default_res(BID_RES, STATUS_NOK);
     else if (!user_loggedin(uid))
         return default_res(BID_RES, STATUS_NLG);
     else if (!user_ok_password(uid, password))
         return default_res(BID_RES, STATUS_ERR);
-    else if (!bid_value_ok(aid, value))
+    else if ((value_ok = bid_value_ok(aid, value)) == -1)
+        return default_res(BID_RES, STATUS_ERR);
+    else if (!value_ok)
         return default_res(BID_RES, STATUS_REF);
     else if (auction_is_owner(aid, uid))
         return default_res(BID_RES, STATUS_ILG);
