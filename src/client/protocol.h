@@ -111,4 +111,14 @@ char* sas_req(char* aid);
 char* opa_req(char* uid, char* password, char* name, char* start_value, char* timeactive, char* fname, char* fsize);
 bool opa_res(char *response, bool print);
 
+char* fmt_aid(char* aid);
+
+bool is_valid_uid(char* uid);
+bool is_valid_aid(char* aid);
+bool is_valid_password(char* password);
+bool is_valid_name(char* name);
+bool is_valid_fname(char* fname);
+bool is_valid_timeactive(char* timeactive);
+bool is_valid_value(char* value);
+
 #endif

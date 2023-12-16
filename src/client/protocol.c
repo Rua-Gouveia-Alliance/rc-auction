@@ -626,3 +626,83 @@ char *sas_req(char *aid) {
 
     return msg;
 }
+
+bool is_valid_fname(char *fname) {
+    char *token;
+
+    if (fname == NULL)
+        return false;
+
+    if (strlen(fname) < 5 || strlen(fname) > 24)
+        return false;
+
+    // File name
+    token = strtok(fname, ".");
+    if (token == NULL)
+        return false;
+    if (strlen(token) < 1 || !is_alphanumeric(token))
+        return false;
+
+    // File extension
+    token = strtok(NULL, " ");
+    if (token == NULL)
+        return false;
+    if (strlen(token) != 3 || !is_lowercase(token))
+        return false;
+
+    return true;
+}
+
+bool is_valid_aid(char *aid) {
+    if (aid == NULL)
+        return false;
+
+    return strlen(aid) <= AID_SIZE && is_numeric(aid);
+}
+
+bool is_valid_uid(char *uid) {
+    if (uid == NULL)
+        return false;
+    return is_numeric(uid) && strlen(uid) == UID_SIZE;
+}
+
+bool is_valid_value(char *value) {
+    if (value == NULL)
+        return false;
+    return is_numeric(value) && strlen(value) <= BID_VAL_SIZE;
+}
+
+bool is_valid_password(char *password) {
+    if (password == NULL)
+        return false;
+    return is_alphanumeric(password) && strlen(password) == PASS_SIZE;
+}
+
+bool is_valid_name(char* name) {
+    if (name == NULL)
+        return false;
+    return strlen(name) <= 10 && is_alphanumeric(name);
+}
+
+bool is_valid_timeactive(char* timeactive) {
+    if (timeactive == NULL)
+        return false;
+    return strlen(timeactive) <= DUR_SIZE && is_numeric(timeactive);
+}
+
+char* fmt_aid(char* raw_aid) {
+    int raw_aid_size = strlen(raw_aid);
+    if (raw_aid_size >= AID_SIZE)
+        return raw_aid;
+
+    char* aid = (char*)malloc(sizeof(char)*(AID_SIZE+1));
+
+    if (raw_aid_size == 1) {
+        sprintf(aid, "00%s", raw_aid);
+    } else {
+        sprintf(aid, "0%s", raw_aid);
+    }
+
+    aid[AID_SIZE] = '\0';
+    return aid;
+}

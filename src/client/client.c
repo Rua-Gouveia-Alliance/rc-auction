@@ -25,13 +25,11 @@ void login(char *uid, char *password) {
     }
 
     // check for valid arguments
-    // UID
-    if (strlen(uid) != UID_SIZE || !is_numeric(uid)) {
+    if (!is_valid_uid(uid)) {
         printf("error: wrong uid format\n");
         return;
     }
-    // password
-    if (strlen(password) != PASS_SIZE || !is_alphanumeric(password)) {
+    if (!is_valid_password(password)) {
         printf("error: wrong password format\n");
         return;
     }
@@ -137,23 +135,20 @@ void open_auc(char *name, char *asset_fname, char *start_value,
         return;
     }
 
-    if (strlen(name) > NAME_SIZE) {
-        printf("error: name is too big\n");
+    if (!is_valid_name(name)) {
+        printf("erro: invalid name\n");
         return;
     }
-
-    if (strlen(asset_fname) > FNAME_SIZE) {
-        printf("error: file name is too big\n");
+    if (!is_valid_fname(asset_fname)) {
+        printf("erro: invalid file name\n");
         return;
     }
-
-    if (strlen(start_value) > BID_VAL_SIZE) {
-        printf("error: start value is too big\n");
+    if (!is_valid_value(start_value)) {
+        printf("erro: invalid start value\n");
         return;
     }
-
-    if (strlen(start_value) > DUR_SIZE) {
-        printf("error: auction duration is too big\n");
+    if (!is_valid_timeactive(timeactive)) {
+        printf("erro: invalid time active\n");
         return;
     }
 
@@ -195,11 +190,17 @@ void open_auc(char *name, char *asset_fname, char *start_value,
     return;
 }
 
-void close_auc(char *aid) {
+void close_auc(char *raw_aid) {
     char *request, *response;
+    char *aid = fmt_aid(raw_aid);
 
     if (!user.logged_in) {
         printf("error: not logged in\n");
+        return;
+    }
+
+    if (!is_valid_aid(aid)) {
+        printf("erro: invalid aid\n");
         return;
     }
 
@@ -210,6 +211,8 @@ void close_auc(char *aid) {
 
     free(request);
     free(response);
+    if (aid != raw_aid)
+        free(aid);
     return;
 }
 
@@ -259,9 +262,15 @@ void list() {
     return;
 }
 
-void show_asset(char *aid) {
+void show_asset(char *raw_aid) {
     bool ok;
     char *request;
+    char *aid = fmt_aid(raw_aid);
+
+    if (!is_valid_aid(aid)) {
+        printf("erro: invalid aid\n");
+        return;
+    }
 
     request = sas_req(aid);
     ok = transfer_file(asip, asport, request, SAS_SIZE);
@@ -270,19 +279,26 @@ void show_asset(char *aid) {
         printf("error: auction server couldn't send the image\n");
 
     free(request);
+    if (aid != raw_aid)
+        free(aid);
     return;
 }
 
-void bid(char *aid, char *value) {
+void bid(char *raw_aid, char *value) {
     char *request, *response;
+    char *aid = fmt_aid(raw_aid);
 
     if (!user.logged_in) {
         printf("error: not logged in\n");
         return;
     }
 
-    if (strlen(value) > BID_VAL_SIZE) {
-        printf("error: bid exceeds max amount\n");
+    if (!is_valid_aid(aid)) {
+        printf("erro: invalid aid\n");
+        return;
+    }
+    if (!is_valid_value(value)) {
+        printf("erro: invalid value\n");
         return;
     }
 
@@ -293,11 +309,19 @@ void bid(char *aid, char *value) {
 
     free(request);
     free(response);
+    if (aid != raw_aid)
+        free(aid);
     return;
 }
 
-void show_record(char *aid) {
+void show_record(char *raw_aid) {
     char *request, *response;
+    char *aid = fmt_aid(raw_aid);
+
+    if (!is_valid_aid(aid)) {
+        printf("erro: invalid aid\n");
+        return;
+    }
 
     request = src_req(aid);
     response = use_udp(asip, asport, request, SRC_SIZE, BID_LIST_SIZE);
@@ -306,6 +330,8 @@ void show_record(char *aid) {
 
     free(request);
     free(response);
+    if (aid != raw_aid)
+        free(aid);
     return;
 }
 

@@ -45,11 +45,15 @@ bool valid_fname(char *fname) {
 
     // File name
     token = strtok(fname, ".");
+    if (token == NULL)
+        return false;
     if (strlen(token) < 1 || !is_alphanumeric(token))
         return false;
 
     // File extension
     token = strtok(NULL, " ");
+    if (token == NULL)
+        return false;
     if (strlen(token) != 3 || !is_lowercase(token))
         return false;
 
@@ -60,11 +64,7 @@ bool valid_aid(char *aid) {
     if (aid == NULL)
         return false;
 
-    if (!is_numeric(aid))
-        return false;
-
-    int parsed_aid = atoi(aid);
-    return parsed_aid > 0 && parsed_aid < 100;
+    return strlen(aid) <= AID_SIZE && is_numeric(aid);
 }
 
 bool valid_uid(char *uid) {
@@ -83,6 +83,18 @@ bool valid_password(char *password) {
     if (password == NULL)
         return false;
     return is_alphanumeric(password) && strlen(password) == PASS_SIZE;
+}
+
+bool is_valid_name(char* name) {
+    if (name == NULL)
+        return false;
+    return strlen(name) <= 10 && is_alphanumeric(name);
+}
+
+bool is_valid_timeactive(char* timeactive) {
+    if (timeactive == NULL)
+        return false;
+    return strlen(timeactive) <= DUR_SIZE && is_numeric(timeactive);
 }
 
 int parse_lin(char *msg, char *uid, char *password) {
