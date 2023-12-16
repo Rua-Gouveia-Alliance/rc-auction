@@ -216,6 +216,8 @@ char *show_record(char *aid) {
     if (!auction_exists(aid))
         return default_res(SRC_RES, STATUS_NOK);
     
+    auction_update(aid);
+
     char* start_info = fmt_start_info(aid);
     char* bids = list_bids(aid, DEFAULT_LIMIT);
     char* end_info = fmt_end_info(aid);

@@ -570,13 +570,13 @@ char *src_ok_res(char *start_info, char* bids, char* end_info) {
     strcpy(&msg[CODE_SIZE + 1 + 2 + 1], start_info);
 
     if (bids_size != 0) {
-        msg[CODE_SIZE + 1 + 2 + start_info_size] = ' ';
-        strcpy(&msg[CODE_SIZE + 1 + 2 + start_info_size + 1], bids);
+        msg[CODE_SIZE + 1 + 2 + 1 + start_info_size] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1], bids);
     }
 
     if (end_info_size != 0) {
-        msg[CODE_SIZE + 1 + 2 + start_info_size + 1 + bids_size] = ' ';
-        strcpy(&msg[CODE_SIZE + 1 + 2 + start_info_size + 1 + bids_size + 1], end_info);
+        msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size + 1], end_info);
     }
 
     msg[res_size] = '\n';
