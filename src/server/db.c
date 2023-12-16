@@ -285,6 +285,43 @@ bool auction_exists(char *aid) {
     return false;
 }
 
+char *auction_asset_dir(char *aid) {
+    char *auction = auction_dir(aid);
+    char *asset = get_filename(auction, ASSET_DIR, "");
+    free(auction);
+    return asset;
+}
+
+char *auction_asset_path(char *aid) {
+    char *asset = auction_asset_dir(aid);
+    char *path;
+    DIR *dir;
+    struct dirent *entry;
+
+    // Open the directory
+    dir = opendir(asset);
+    if (dir == NULL) {
+        fprintf(stderr, "Error opening directory %s\n", asset);
+        return NULL;
+    }
+
+    entry = readdir(dir);
+    if (entry == NULL)
+        return NULL;
+
+    while (((entry = readdir(dir)) != NULL)) {
+        if (strcmp(entry->d_name, "..") != 0 &&
+            strcmp(entry->d_name, ".") != 0) {
+            path = get_filename(asset, entry->d_name, "");
+            break;
+        }
+    }
+
+    closedir(dir);
+    free(asset);
+    return path;
+}
+
 char *auction_info(char *aid) {
     char *auction = auction_dir(aid);
     char *start = get_filename(auction, aid, START_SUFIX);
@@ -533,9 +570,11 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         return NULL;
     }
     char *bids = auction_bids_dir(aid);
+    char *asset = auction_asset_dir(aid);
 
     mkdir(auction, DEFAULT_PERMS);
     mkdir(bids, DEFAULT_PERMS);
+    mkdir(asset, DEFAULT_PERMS);
 
     char *start = get_filename(auction, aid, START_SUFIX);
     fd = open(start, O_CREAT | O_WRONLY, DEFAULT_PERMS);
@@ -545,6 +584,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(aid);
         free(auction);
         free(bids);
+        free(asset);
         free(start);
         return NULL;
     }
@@ -561,6 +601,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(aid);
         free(auction);
         free(bids);
+        free(asset);
         free(start);
         free(start_datetime);
         free(info);
@@ -576,6 +617,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(aid);
         free(auction);
         free(bids);
+        free(asset);
         free(start);
         free(start_datetime);
         free(info);
@@ -591,6 +633,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
         free(aid);
         free(auction);
         free(bids);
+        free(asset);
         free(start);
         free(start_datetime);
         free(info);
@@ -600,6 +643,7 @@ char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
 
     free(auction);
     free(bids);
+    free(asset);
     free(start);
     free(start_datetime);
     free(info);

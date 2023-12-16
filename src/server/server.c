@@ -22,6 +22,7 @@
 
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
+static int tcp_main, udp_sock;
 
 char *login(char *uid, char *password) {
     if (!user_registered(uid)) {
@@ -176,7 +177,20 @@ char *list() {
     return response;
 }
 
-char *show_asset(char *aid) { return NULL; }
+char *show_asset(char *aid) {
+    char *fname, fsize[FSIZE_SIZE + 1], *path, *response;
+    long int size;
+    memset(fsize, 0, (FSIZE_SIZE + 1) * sizeof(char));
+
+    if ((fname = auction_asset_fname(aid)) == NULL)
+        return default_res(SAS_RES, STATUS_NOK);
+    if ((path = auction_asset_path(aid)) == NULL)
+        return default_res(SAS_RES, STATUS_NOK);
+
+    size = file_size(path);
+    sprintf(fsize, "%ld", size);
+    return sas_ok_res(fname, fsize);
+}
 
 char *bid(char *uid, char *password, char *aid, char *value) {
     int value_ok;
@@ -200,7 +214,10 @@ char *bid(char *uid, char *password, char *aid, char *value) {
     return default_res(BID_RES, STATUS_OK);
 }
 
-char *show_record(char *aid) { return NULL; }
+char *show_record(char *aid) {
+    // TODO
+    return NULL;
+}
 
 bool treat_request(char *request, int socket) {
     int id;
@@ -274,7 +291,7 @@ bool treat_request(char *request, int socket) {
         if (verbose)
             printf("%s\n", response);
 
-        if (is_roa_ok(response)) {
+        if (is_req_ok(response)) {
             free(request);
             return prepare_freceive(socket, true, response);
         } else {
@@ -295,24 +312,106 @@ bool treat_request(char *request, int socket) {
         if (verbose)
             printf("%s\n", response);
 
+        send_tcp(socket, response);
+        break;
+    }
+    case LMA: {
+        char uid[UID_SIZE + 1];
+
+        if (parse_lma(request, uid) != -1)
+            response = user_auctions(uid);
+        else
+            response = bad_syntax_res();
+
+        if (verbose)
+            printf("%s\n", response);
+
         send_udp(socket, response, NULL);
         break;
     }
-    case LMA:
+    case LMB: {
+        char uid[UID_SIZE + 1];
+
+        if (parse_lmb(request, uid) != -1)
+            response = user_bids(uid);
+        else
+            response = bad_syntax_res();
+
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
         break;
-    case LMB:
+    }
+    case LST: {
+        response = list();
+
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
         break;
-    case LST:
+    }
+    case SAS: {
+        char aid[AID_SIZE + 1];
+        char *path;
+
+        if (parse_sas(request, aid) != -1)
+            response = show_asset(aid);
+        else
+            response = bad_syntax_res();
+
+        if (verbose)
+            printf("%s\n", response);
+
+        if (is_req_ok(response)) {
+            path = auction_asset_path(aid);
+            send_tcp_file(socket, response, path);
+            free(path);
+        } else {
+            send_tcp(socket, response);
+        }
         break;
-    case SRC:
+    }
+    case BID: {
+        char uid[UID_SIZE + 1];
+        char pass[PASS_SIZE + 1];
+        char aid[AID_SIZE + 1];
+        char value[START_VAL_SIZE + 1];
+
+        if (parse_bid(request, uid, pass, aid, value) != -1)
+            response = bid(uid, pass, aid, value);
+        else
+            response = bad_syntax_res();
+
+        if (verbose)
+            printf("%s\n", response);
+
+        send_tcp(socket, response);
         break;
-    case BID:
+    }
+    case SRC: {
+        char aid[AID_SIZE + 1];
+
+        if (parse_src(request, aid) != -1)
+            response = show_record(aid);
+        else
+            response = bad_syntax_res();
+
+        if (verbose)
+            printf("%s\n", response);
+
+        send_udp(socket, response, NULL);
         break;
-    case SAS:
+    }
+    default: {
+        response = bad_syntax_res();
+        if (socket == udp_sock)
+            send_udp(socket, response, NULL);
+        else
+            send_tcp(socket, response);
         break;
-    default:
-        // responser err
-        break;
+    }
     }
 
     free(response);
@@ -321,7 +420,7 @@ bool treat_request(char *request, int socket) {
 }
 
 void handle_sockets() {
-    int tcp_main, udp_sock, out_select, temp_sock;
+    int out_select, temp_sock;
     bool done, ok;
     fd_set current_sockets, ready_sockets;
     struct timeval timeout;

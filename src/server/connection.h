@@ -31,6 +31,8 @@ void send_udp(int udp_sock, char *msg, struct sockaddr_in *addr);
 
 void send_tcp(int tcp_sock, char *msg);
 
+void send_tcp_file(int tcp_sock, char *msg, char *path);
+
 bool prepare_freceive(int tcp_sock, bool keep, char *response);
 
 #endif

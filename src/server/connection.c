@@ -1,4 +1,5 @@
 #include "connection.h"
+#include "../util.h"
 #include "db.h"
 #include "protocol.h"
 #include <arpa/inet.h>
@@ -270,6 +271,46 @@ void send_tcp(int tcp_sock, char *msg) {
         exit(1);
     }
 
+    close(tcp_sock);
+    rm_tcpconn(tcp_sock);
+}
+
+void send_tcp_file(int tcp_sock, char *msg, char *path) {
+    ssize_t n;
+    long int file_bytes, written_bytes = 0;
+    char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
+
+    n = write(tcp_sock, msg, strlen(msg));
+    if (n == -1) {
+        printf("error: failed to send tcp response\n");
+        exit(1);
+    }
+
+    file_bytes = file_size(path);
+    int file = open(path, O_RDONLY);
+    if (file == -1) {
+        printf("error: opening file failed\n");
+        exit(1);
+    }
+    while (written_bytes < file_bytes) {
+        memset(buffer, 0, DEFAULT_SIZE * sizeof(char));
+        n = read(file, buffer, DEFAULT_SIZE);
+        if (n == -1) {
+            printf("error: reading file failed (%s)\n", path);
+            exit(1);
+        }
+
+        n = write(tcp_sock, buffer, n);
+        if (n == -1) {
+            printf("error: communication with client failed\n");
+            exit(1);
+        }
+
+        written_bytes += n;
+    }
+    write(tcp_sock, "\n", 1);
+
+    close(file);
     close(tcp_sock);
     rm_tcpconn(tcp_sock);
 }

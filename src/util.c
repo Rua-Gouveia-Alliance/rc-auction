@@ -105,10 +105,16 @@ int count_entries(char *path, int type) {
     return count;
 }
 
-char* remove_extension(char* file) {
+char *remove_extension(char *file) {
     int name_size = strlen(file) - 4;
-    char* file_name = (char*)malloc(sizeof(char)*(name_size + 1));
+    char *file_name = (char *)malloc(sizeof(char) * (name_size + 1));
     strncpy(file_name, file, name_size);
     file_name[name_size] = '\0';
     return file_name;
+}
+
+long int file_size(char *file) {
+    struct stat st;
+    stat(file, &st);
+    return st.st_size;
 }

@@ -18,8 +18,10 @@ char *i_to_aid(int i);
 
 int count_entries(char *path, int type);
 
-char* remove_extension(char* file);
+char *remove_extension(char *file);
 
 bool is_lowercase(const char *str);
+
+long int file_size(char *file);
 
 #endif

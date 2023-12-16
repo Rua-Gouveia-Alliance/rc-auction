@@ -75,6 +75,8 @@
 #define SAS_REQ "SAS"
 #define SAS_SIZE (CODE_SIZE + 1 + AID_SIZE + 1)
 #define SAS_RES "RSA "
+#define SAS_RES_SIZE                                                           \
+    (CODE_SIZE + 1 + STATUS_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 
 #define OPA 10
 #define OPA_REQ "OPA"
@@ -100,14 +102,17 @@
 int interpret_req(char *msg);
 
 int parse_lin(char *msg, char *uid, char *password);
-
 int parse_lou(char *msg, char *uid, char *password);
-
 int parse_unr(char *msg, char *uid, char *password);
+int parse_lma(char *msg, char *uid);
+int parse_lmb(char *msg, char *uid);
+int parse_sas(char *msg, char *aid);
+int parse_bid(char *msg, char *uid, char *pass, char *aid, char *value);
+int parse_src(char *msg, char *aid);
 
 char *fpath_from_roa(char *msg, char *fname);
 
-bool is_roa_ok(char *msg);
+bool is_req_ok(char *msg);
 
 int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
               char *timeactive, char *fname, char *fsize);
@@ -117,6 +122,8 @@ int parse_cls(char *msg, char *uid, char *pass, char *aid);
 char *default_res(char *res, char *status);
 
 char *opa_ok_res(char *aid);
+
+char *sas_ok_res(char *fname, char *fsize);
 
 char *list_res(char *code, char *list);
 

@@ -25,6 +25,7 @@
 #define HOSTED_DIR "HOSTED/"
 #define BIDDED_DIR "BIDDED/"
 #define AUCTIONS_DIR DB_DIR "AUCTIONS/"
+#define ASSET_DIR "ASSET/"
 #define START_SUFIX "_start.txt"
 #define END_SUFIX "_end.txt"
 #define TXT_SUFIX ".txt"
@@ -48,6 +49,8 @@ bool user_ok_password(char *uid, char *password);
 char *auction_dir(char *aid);
 char *auction_bids_dir(char *aid);
 bool auction_exists(char *aid);
+char *auction_asset_dir(char *aid);
+char *auction_asset_path(char *aid);
 char *auction_info(char *aid);
 int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
                        char *start_value, char *timeactive,
@@ -70,8 +73,8 @@ int auction_update(char *aid);
 int auction_count();
 char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                    char *fname);
-int make_bid(char* uid, char* aid, char* value);
-int bid_value_ok(char* aid, char* value);
-char* list_auctions(char* dir_path, int limit);
+int make_bid(char *uid, char *aid, char *value);
+int bid_value_ok(char *aid, char *value);
+char *list_auctions(char *dir_path, int limit);
 
 #endif
