@@ -276,13 +276,33 @@ char *list_auctions(char *dir_path, int limit) {
     return auctions;
 }
 
+char *get_bid_info(char* path) {
+    ssize_t n;
+    int fd = open(path, O_RDONLY);
+    char *bid_info;
+    
+    if (fd == -1)
+        return NULL;
+
+    bid_info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
+    n = read(fd, bid_info, BID_INFO_LEN);
+    close(fd);
+
+    if (n == -1) {
+        free(bid_info);
+        return NULL;
+    }
+
+    return bid_info;
+}
+
 char *list_bids(char *aid, int limit) {
     DIR *dir;
     int i, bid_count;
     struct dirent *entry;
-    char *bids, *bid_info, *dir_path, bid_path;
+    char *bids, *bid_info, *dir_path, *bid_path;
     
-    dir_path = NULL;
+    dir_path = auction_bids_dir(aid);
 
     // Open the directory
     dir = opendir(dir_path);
@@ -311,7 +331,8 @@ char *list_bids(char *aid, int limit) {
         if (entry->d_type == DT_REG) {
             bid_path = get_filename(dir_path, entry->d_name, "");
             bid_info = get_bid_info(bid_path);
-            if (bid_info == NULL) { //TODO: Vai ter memory leaks pa crl aqui se fizer assim
+            if (bid_info == NULL) {
+                free(bids);
                 closedir(dir);
                 return NULL;
             }
@@ -758,26 +779,6 @@ int bid_value_ok(char *aid, char *value) {
         return -1;
 
     return bid_value > current_value;
-}
-
-char *get_bid_info(char* path) {
-    ssize_t n;
-    int fd = open(path, O_RDONLY);
-    char *bid_info;
-    
-    if (fd == -1)
-        return NULL;
-
-    bid_info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
-    n = read(fd, bid_info, BID_INFO_LEN);
-    close(fd);
-
-    if (n == -1) {
-        free(bid_info);
-        return NULL;
-    }
-
-    return bid_info;
 }
 
 char *create_bid_info(char *uid, char *value) {
