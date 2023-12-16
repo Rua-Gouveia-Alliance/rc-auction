@@ -318,10 +318,10 @@ char *list_bids(char *aid, int limit) {
 
     // Open the directory
     dir = opendir(dir_path);
-    free(dir_path);
 
     if (dir == NULL) {
         fprintf(stderr, "Error opening directory %s\n", dir_path);
+        free(dir_path);
         return NULL;
     }
 
@@ -329,6 +329,7 @@ char *list_bids(char *aid, int limit) {
     i = 0;
     bid_count = count_entries(dir_path, DT_REG);
     if (bid_count < 1) {
+        free(dir_path);
         closedir(dir);
         return NULL;
     }
@@ -345,6 +346,7 @@ char *list_bids(char *aid, int limit) {
             bid_info = fmt_bid_info(bid_path);
             if (bid_info == NULL) {
                 free(bids);
+                free(dir_path);
                 closedir(dir);
                 return NULL;
             }
@@ -360,6 +362,7 @@ char *list_bids(char *aid, int limit) {
 
     bids[bid_count * (FMT_BID_INFO_LEN + 1) - 1] = '\n';
     closedir(dir);
+    free(dir_path);
     return bids;
 }
 
@@ -455,7 +458,13 @@ char *auction_start_info(char *aid) {
 }
 
 char* fmt_start_info(char* aid) {
-    char* info = auction_start_info(aid);
+    char* info = (char*)malloc(sizeof(char) * (FMT_INFO_SIZE + 1));
+    char uid[UID_SIZE + 1], name[NAME_SIZE + 1], fname[FNAME_SIZE + 1];
+    char start_value[START_VAL_SIZE + 1], timeactive[DUR_SIZE + 1], start_datetime[DATE_TIME_SIZE + 1];
+
+    auction_parse_info(aid, uid, name, fname, start_value, timeactive, start_datetime, NULL);
+    sprintf(info, "%s %s %s %s %s %s", uid, name, fname, start_value, timeactive, start_datetime);
+
     return info;
 }
 

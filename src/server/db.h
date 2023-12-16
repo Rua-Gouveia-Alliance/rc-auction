@@ -10,17 +10,18 @@
 #define DATE_SIZE 10
 #define TIME_SIZE 8
 #define DATE_TIME_SIZE (DATE_SIZE + 1 + TIME_SIZE)
+#define FULLTIME_SIZE 10
 #define SECS_SIZE 10
 #define INFO_SIZE                                                              \
     (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 +      \
-     DUR_SIZE + 1 + DATE_TIME_SIZE)
-#define END_INFO_SIZE 0
+     DUR_SIZE + 1 + DATE_TIME_SIZE + 1 + FULLTIME_SIZE)
+#define END_INFO_SIZE (DATE_TIME_SIZE + 1 + DUR_SIZE)
 #define BID_VALUE_SIZE 6
 #define BID_INFO_LEN (6 + 1 + 6 + DATE_TIME_SIZE + SECS_SIZE)
 #define AUCTION_STATE_SIZE (AID_SIZE + 1 + 1)
 
 #define FMT_BID_INFO_LEN (1 + 1 + BID_INFO_LEN)
-#define FMT_INFO_SIZE (INFO_SIZE)
+#define FMT_INFO_SIZE (INFO_SIZE - FULLTIME_SIZE)
 #define FMT_END_INFO_SIZE (1 + 1 + END_INFO_SIZE)
 
 #define DB_DIR "DB/"

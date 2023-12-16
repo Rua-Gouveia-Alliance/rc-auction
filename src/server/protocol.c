@@ -551,7 +551,14 @@ char *sas_ok_res(char *fname, char *fsize) {
 char *src_ok_res(char *start_info, char* bids, char* end_info) {
     int bids_size = bids == NULL ? 0 : strlen(bids);
     int end_info_size = end_info == NULL ? 0 : END_INFO_SIZE;
-    int res_size = RES_SIZE + INFO_SIZE + bids_size + end_info_size;
+    int start_info_size = strlen(start_info);
+    int res_size = CODE_SIZE + 1 + 2 + 1 + start_info_size;
+
+    if (bids_size != 0)
+        res_size += 1 + bids_size;
+
+    if (end_info_size != 0)
+        res_size += 1 + end_info_size;
 
     char *msg = malloc((res_size + 1) * sizeof(char));
     memset(msg, 0, (res_size + 1) * sizeof(char));
@@ -563,13 +570,13 @@ char *src_ok_res(char *start_info, char* bids, char* end_info) {
     strcpy(&msg[CODE_SIZE + 1 + 2 + 1], start_info);
 
     if (bids_size != 0) {
-        msg[CODE_SIZE + 1 + 2 + INFO_SIZE] = ' ';
-        strcpy(&msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1], bids);
+        msg[CODE_SIZE + 1 + 2 + start_info_size] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + start_info_size + 1], bids);
     }
 
     if (end_info_size != 0) {
-        msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1 + bids_size] = ' ';
-        strcpy(&msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1 + bids_size + 1], end_info);
+        msg[CODE_SIZE + 1 + 2 + start_info_size + 1 + bids_size] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + start_info_size + 1 + bids_size + 1], end_info);
     }
 
     msg[res_size] = '\n';
