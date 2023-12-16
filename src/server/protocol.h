@@ -125,6 +125,8 @@ char *opa_ok_res(char *aid);
 
 char *sas_ok_res(char *fname, char *fsize);
 
+char *src_ok_res(char *start_info, char* bids, char* end_info);
+
 char *list_res(char *code, char *list);
 
 char *server_error_res();

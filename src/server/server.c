@@ -213,8 +213,23 @@ char *bid(char *uid, char *password, char *aid, char *value) {
 }
 
 char *show_record(char *aid) {
-    // TODO
-    return NULL;
+    if (!auction_exists(aid))
+        return default_res(SRC_RES, STATUS_NOK);
+    
+    char* start_info = fmt_start_info(aid);
+    char* bids = list_bids(aid, DEFAULT_LIMIT);
+    char* end_info = fmt_end_info(aid);
+    char* ok_res = src_ok_res(start_info, bids, end_info);
+    
+    free(start_info);
+
+    if (bids != NULL)
+        free(bids);
+
+    if (end_info != NULL)
+        free(end_info);
+    
+    return ok_res;
 }
 
 bool treat_request(char *request, int socket) {

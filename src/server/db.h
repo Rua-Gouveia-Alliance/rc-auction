@@ -14,9 +14,14 @@
 #define INFO_SIZE                                                              \
     (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + START_VAL_SIZE + 1 +      \
      DUR_SIZE + 1 + DATE_TIME_SIZE)
+#define END_INFO_SIZE 0
 #define BID_VALUE_SIZE 6
 #define BID_INFO_LEN (6 + 1 + 6 + DATE_TIME_SIZE + SECS_SIZE)
 #define AUCTION_STATE_SIZE (AID_SIZE + 1 + 1)
+
+#define FMT_BID_INFO_LEN (1 + 1 + BID_INFO_LEN)
+#define FMT_INFO_SIZE (INFO_SIZE)
+#define FMT_END_INFO_SIZE (1 + 1 + END_INFO_SIZE)
 
 #define DB_DIR "DB/"
 #define USERS_DIR DB_DIR "USERS/"
@@ -48,10 +53,12 @@ bool user_ok_password(char *uid, char *password);
 
 char *auction_dir(char *aid);
 char *auction_bids_dir(char *aid);
+int auction_bid_count(char* aid);
 bool auction_exists(char *aid);
 char *auction_asset_dir(char *aid);
 char *auction_asset_path(char *aid);
-char *auction_info(char *aid);
+char *auction_start_info(char *aid);
+char *auction_end_info(char *aid);
 int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
                        char *start_value, char *timeactive,
                        char *start_datetime, char *start_fulltime);
@@ -73,8 +80,14 @@ int auction_update(char *aid);
 int auction_count();
 char *auction_open(char *uid, char *name, char *start_value, char *timeactive,
                    char *fname);
+
 int make_bid(char *uid, char *aid, char *value);
 int bid_value_ok(char *aid, char *value);
+
 char *list_auctions(char *dir_path, int limit);
+char *list_bids(char *aid, int limit);
+
+char* fmt_start_info(char* aid);
+char* fmt_end_info(char* aid);
 
 #endif

@@ -547,3 +547,31 @@ char *sas_ok_res(char *fname, char *fsize) {
     msg[CODE_SIZE + 1 + 2 + 1 + strlen(fname) + 1 + strlen(fsize)] = ' ';
     return msg;
 }
+
+char *src_ok_res(char *start_info, char* bids, char* end_info) {
+    int bids_size = bids == NULL ? 0 : strlen(bids);
+    int end_info_size = end_info == NULL ? 0 : END_INFO_SIZE;
+    int res_size = RES_SIZE + INFO_SIZE + bids_size + end_info_size;
+
+    char *msg = malloc((res_size + 1) * sizeof(char));
+    memset(msg, 0, (res_size + 1) * sizeof(char));
+
+    strcpy(msg, SRC_RES);
+    msg[CODE_SIZE] = ' ';
+    strcpy(&msg[CODE_SIZE + 1], "OK");
+    msg[CODE_SIZE + 1 + 2] = ' ';
+    strcpy(&msg[CODE_SIZE + 1 + 2 + 1], start_info);
+
+    if (bids_size != 0) {
+        msg[CODE_SIZE + 1 + 2 + INFO_SIZE] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1], bids);
+    }
+
+    if (end_info_size != 0) {
+        msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1 + bids_size] = ' ';
+        strcpy(&msg[CODE_SIZE + 1 + 2 + INFO_SIZE + 1 + bids_size + 1], end_info);
+    }
+
+    msg[res_size] = '\n';
+    return msg;
+}
