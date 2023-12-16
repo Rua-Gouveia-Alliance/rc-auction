@@ -1,6 +1,7 @@
 #include "protocol.h"
 #include "../util.h"
 #include "db.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,45 +36,30 @@ int interpret_req(char *msg) {
 }
 
 bool valid_fname(char *fname) {
-    char *token;
-    char *temp;
+    bool found_ext = false;
+    int i;
 
     if (fname == NULL) {
         return false;
     }
-    temp = malloc((strlen(fname) + 1) * sizeof(char));
-    memset(temp, 0, (strlen(fname) + 1) * sizeof(char));
-    strcpy(temp, fname);
 
-    if (strlen(fname) < 5 || strlen(fname) > 24) {
-        free(temp);
-        return false;
-    }
+    for (i = 0; i < strlen(fname); i++) {
+        if (fname[i] == '.') {
+            if (i == 0 || i == strlen(fname) - 1)
+                return false;
+            found_ext = true;
+            break;
+        }
 
-    // File name
-    token = strtok(temp, ".");
-    if (token == NULL) {
-        free(temp);
-        return false;
-    }
-    if (strlen(token) < 1 || !is_alphanumeric(token)) {
-        free(temp);
-        return false;
+        if (!isalnum(fname[i]) && fname[i] != '-' && fname[i] != '_')
+            return false;
     }
 
-    // File extension
-    token = strtok(NULL, " ");
-    if (token == NULL) {
-        free(temp);
+    if (!found_ext)
         return false;
-    }
-    if (strlen(token) != 3 || !is_lowercase(token)) {
-        free(temp);
-        return false;
-    }
 
-    free(temp);
-    return true;
+    // ext
+    return strlen(fname + i + 1) == 3 && is_lowercase(fname + i + 1);
 }
 
 bool valid_aid(char *aid) {
