@@ -211,6 +211,11 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
 
         read_bytes += n;
     }
+    if (file_bytes - read_bytes == -1) {
+        // remove \n from file
+        long new_pos = lseek(file, -1, SEEK_END);
+        ftruncate(file, new_pos);
+    }
 
     free(status);
     free(file_name);
