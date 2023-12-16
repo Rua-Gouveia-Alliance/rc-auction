@@ -250,7 +250,7 @@ char *list_auctions(char *dir_path, int limit) {
 
     // TODO: ordenar
     while (((entry = readdir(dir)) != NULL)) {
-        if (i > limit)
+        if (i >= limit)
             break;
 
         if (strcmp(entry->d_name, "..") != 0 &&
@@ -274,6 +274,60 @@ char *list_auctions(char *dir_path, int limit) {
     auctions[auction_count * (AUCTION_STATE_SIZE + 1) - 1] = '\n';
     closedir(dir);
     return auctions;
+}
+
+char *list_bids(char *aid, int limit) {
+    DIR *dir;
+    int i, bid_count;
+    struct dirent *entry;
+    char *bids, *bid_info, *dir_path, bid_path;
+    
+    dir_path = NULL;
+
+    // Open the directory
+    dir = opendir(dir_path);
+    free(dir_path);
+
+    if (dir == NULL) {
+        fprintf(stderr, "Error opening directory %s\n", dir_path);
+        return NULL;
+    }
+
+    // Read directory entries
+    i = 0;
+    bid_count = count_entries(dir_path, DT_REG);
+    if (bid_count == -1) {
+        closedir(dir);
+        return NULL;
+    }
+
+    bids = malloc((bid_count * (BID_INFO_LEN + 1) + 1) * sizeof(char));
+    memset(bids, 0, (bid_count * (BID_INFO_LEN + 1) + 1) * sizeof(char));
+
+    while (((entry = readdir(dir)) != NULL)) {
+        if (i >= limit)
+            break;
+
+        if (entry->d_type == DT_REG) {
+            bid_path = get_filename(dir_path, entry->d_name, "");
+            bid_info = get_bid_info(bid_path);
+            if (bid_info == NULL) { //TODO: Vai ter memory leaks pa crl aqui se fizer assim
+                closedir(dir);
+                return NULL;
+            }
+
+            strcpy(bids + i * (BID_INFO_LEN + 1), bid_info);
+            (bids + i * (BID_INFO_LEN + 1))[BID_INFO_LEN] = ' ';
+
+            free(bid_info);
+            free(bid_path);
+            i++;
+        }
+    }
+
+    bids[bid_count * (BID_INFO_LEN + 1) - 1] = '\n';
+    closedir(dir);
+    return bids;
 }
 
 char *auction_dir(char *aid) { return get_filename(AUCTIONS_DIR, aid, "/"); }
@@ -704,6 +758,26 @@ int bid_value_ok(char *aid, char *value) {
         return -1;
 
     return bid_value > current_value;
+}
+
+char *get_bid_info(char* path) {
+    ssize_t n;
+    int fd = open(path, O_RDONLY);
+    char *bid_info;
+    
+    if (fd == -1)
+        return NULL;
+
+    bid_info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
+    n = read(fd, bid_info, BID_INFO_LEN);
+    close(fd);
+
+    if (n == -1) {
+        free(bid_info);
+        return NULL;
+    }
+
+    return bid_info;
 }
 
 char *create_bid_info(char *uid, char *value) {

@@ -22,7 +22,6 @@ bool is_numeric(const char *str) {
     }
     return true; // Return true if all characters are digits
 }
-// ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 
 bool is_lowercase(const char *str) {
     while (*str) {
