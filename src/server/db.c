@@ -36,7 +36,7 @@ char *user_bidded_dir(char *uid) {
 int add_to_bidded(char *uid, char *aid) {
     char *bidded_dir = user_bidded_dir(uid),
          *bidded_file = get_filename(bidded_dir, aid, TXT_SUFIX);
-    int fd = open(bidded_file, O_CREAT);
+    int fd = open(bidded_file, O_CREAT, DEFAULT_PERMS);
     free(bidded_dir);
     free(bidded_file);
 
@@ -192,7 +192,7 @@ int set_current_bid(char *aid, char *value) {
     ssize_t n;
     char *dir = auction_dir(aid);
     char *bid_filename = get_filename(dir, CURRENT_BID, TXT_SUFIX);
-    int fd = open(bid_filename, O_CREAT | O_WRONLY);
+    int fd = open(bid_filename, O_CREAT | O_WRONLY, DEFAULT_PERMS);
     if (fd == -1) {
         free(bid_filename);
         free(dir);
@@ -552,7 +552,7 @@ int auction_count() { return count_entries(AUCTIONS_DIR, DT_DIR); }
 int add_to_hosted(char *uid, char *aid) {
     char *hosted_dir = user_hosted_dir(uid),
          *hosted_file = get_filename(hosted_dir, aid, TXT_SUFIX);
-    int fd = open(hosted_file, O_CREAT);
+    int fd = open(hosted_file, O_CREAT, DEFAULT_PERMS);
 
     free(hosted_dir);
     free(hosted_file);
@@ -724,7 +724,7 @@ int add_to_bids(char *aid, char *uid, char *value) {
     char *file = get_filename(dir, value, TXT_SUFIX);
     free(dir);
 
-    fd = open(file, O_CREAT | O_WRONLY);
+    fd = open(file, O_CREAT | O_WRONLY, DEFAULT_PERMS);
     free(file);
 
     if (fd == -1)
