@@ -439,7 +439,7 @@ int parse_bid(char *msg, char *uid, char *pass, char *aid, char *value) {
         return -1;
 
     strncpy(aid, token, AID_SIZE);
-    pass[AID_SIZE] = '\0';
+    aid[AID_SIZE] = '\0';
 
     // value
     token = strtok(NULL, " ");
@@ -447,7 +447,7 @@ int parse_bid(char *msg, char *uid, char *pass, char *aid, char *value) {
         return -1;
 
     strncpy(value, token, START_VAL_SIZE);
-    pass[START_VAL_SIZE] = '\0';
+    value[START_VAL_SIZE] = '\0';
 
     return 0;
 }

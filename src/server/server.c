@@ -209,7 +209,7 @@ char *bid(char *uid, char *password, char *aid, char *value) {
     if (make_bid(uid, aid, value) == -1)
         return server_error_res();
 
-    return default_res(BID_RES, STATUS_OK);
+    return default_res(BID_RES, STATUS_ACC);
 }
 
 char *show_record(char *aid) {

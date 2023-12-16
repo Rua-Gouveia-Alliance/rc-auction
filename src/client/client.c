@@ -287,7 +287,7 @@ void bid(char *aid, char *value) {
     }
 
     request = bid_req(user.uid, user.password, aid, value);
-    response = use_tcp(asip, asport, request, BID_SIZE, DEFAULT_SIZE);
+    response = use_tcp(asip, asport, request, strlen(request), DEFAULT_SIZE);
 
     bid_res(response, true);
 
