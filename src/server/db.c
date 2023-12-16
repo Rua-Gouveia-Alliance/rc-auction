@@ -685,14 +685,15 @@ int auction_close_now(char *aid) {
 
 int auction_update(char *aid) {
     int err;
-    time_t curr_time, start_time, time_active;
+    time_t curr_time, start_time, end_time, time_active;
     char *str_final_time;
 
     curr_time = time(NULL);
     start_time = auction_start_fulltime(aid);
-    if (curr_time - start_time < 0) {
-        time_active = auction_time_active(aid);
-        str_final_time = time_to_str(start_time + time_active);
+    time_active = auction_time_active(aid);
+    end_time = start_time + time_active;
+    if (end_time - curr_time < 0) {
+        str_final_time = time_to_str(end_time);
         err = auction_close(aid, str_final_time, time_active);
         free(str_final_time);
         return err;
