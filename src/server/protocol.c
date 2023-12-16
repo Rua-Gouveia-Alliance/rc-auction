@@ -468,7 +468,7 @@ int parse_src(char *msg, char *aid) {
 
     // UID
     token = strtok(NULL, " ");
-    if (!valid_uid(token))
+    if (!valid_aid(token))
         return -1;
 
     strncpy(aid, token, AID_SIZE);

@@ -610,7 +610,7 @@ bool opa_res(char *response, bool print) {
         return false;
     }
     if (print)
-        printf("opened auction with AID %s\n", status + 3);
+        printf("opened auction with AID %s", status + 3);
     return true;
 }
 

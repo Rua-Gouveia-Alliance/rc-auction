@@ -251,7 +251,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -266,7 +266,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -281,7 +281,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -302,7 +302,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         if (is_req_ok(response)) {
             free(request);
@@ -323,7 +323,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_tcp(socket, response);
         break;
@@ -337,7 +337,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -351,7 +351,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -360,7 +360,7 @@ bool treat_request(char *request, int socket) {
         response = list();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
@@ -375,7 +375,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         if (is_req_ok(response)) {
             path = auction_asset_path(aid);
@@ -398,7 +398,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_tcp(socket, response);
         break;
@@ -412,7 +412,7 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
 
         if (verbose)
-            printf("%s\n", response);
+            printf("Sent: %s", response);
 
         send_udp(socket, response, NULL);
         break;
