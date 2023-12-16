@@ -629,27 +629,43 @@ char *sas_req(char *aid) {
 
 bool is_valid_fname(char *fname) {
     char *token;
+    char *temp;
 
-    if (fname == NULL)
+    if (fname == NULL) {
         return false;
+    }
+    temp = malloc((strlen(fname) + 1) * sizeof(char));
+    memset(temp, 0, (strlen(fname) + 1) * sizeof(char));
+    strcpy(temp, fname);
 
-    if (strlen(fname) < 5 || strlen(fname) > 24)
+    if (strlen(fname) < 5 || strlen(fname) > 24) {
+        free(temp);
         return false;
+    }
 
     // File name
-    token = strtok(fname, ".");
-    if (token == NULL)
+    token = strtok(temp, ".");
+    if (token == NULL) {
+        free(temp);
         return false;
-    if (strlen(token) < 1 || !is_alphanumeric(token))
+    }
+    if (strlen(token) < 1 || !is_alphanumeric(token)) {
+        free(temp);
         return false;
+    }
 
     // File extension
     token = strtok(NULL, " ");
-    if (token == NULL)
+    if (token == NULL) {
+        free(temp);
         return false;
-    if (strlen(token) != 3 || !is_lowercase(token))
+    }
+    if (strlen(token) != 3 || !is_lowercase(token)) {
+        free(temp);
         return false;
+    }
 
+    free(temp);
     return true;
 }
 
@@ -678,24 +694,24 @@ bool is_valid_password(char *password) {
     return is_alphanumeric(password) && strlen(password) == PASS_SIZE;
 }
 
-bool is_valid_name(char* name) {
+bool is_valid_name(char *name) {
     if (name == NULL)
         return false;
     return strlen(name) <= 10 && is_alphanumeric(name);
 }
 
-bool is_valid_timeactive(char* timeactive) {
+bool is_valid_timeactive(char *timeactive) {
     if (timeactive == NULL)
         return false;
     return strlen(timeactive) <= DUR_SIZE && is_numeric(timeactive);
 }
 
-char* fmt_aid(char* raw_aid) {
+char *fmt_aid(char *raw_aid) {
     int raw_aid_size = strlen(raw_aid);
     if (raw_aid_size >= AID_SIZE)
         return raw_aid;
 
-    char* aid = (char*)malloc(sizeof(char)*(AID_SIZE+1));
+    char *aid = (char *)malloc(sizeof(char) * (AID_SIZE + 1));
 
     if (raw_aid_size == 1) {
         sprintf(aid, "00%s", raw_aid);

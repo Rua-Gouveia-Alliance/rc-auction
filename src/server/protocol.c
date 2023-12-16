@@ -36,27 +36,43 @@ int interpret_req(char *msg) {
 
 bool valid_fname(char *fname) {
     char *token;
+    char *temp;
 
-    if (fname == NULL)
+    if (fname == NULL) {
         return false;
+    }
+    temp = malloc((strlen(fname) + 1) * sizeof(char));
+    memset(temp, 0, (strlen(fname) + 1) * sizeof(char));
+    strcpy(temp, fname);
 
-    if (strlen(fname) < 5 || strlen(fname) > 24)
+    if (strlen(fname) < 5 || strlen(fname) > 24) {
+        free(temp);
         return false;
+    }
 
     // File name
-    token = strtok(fname, ".");
-    if (token == NULL)
+    token = strtok(temp, ".");
+    if (token == NULL) {
+        free(temp);
         return false;
-    if (strlen(token) < 1 || !is_alphanumeric(token))
+    }
+    if (strlen(token) < 1 || !is_alphanumeric(token)) {
+        free(temp);
         return false;
+    }
 
     // File extension
     token = strtok(NULL, " ");
-    if (token == NULL)
+    if (token == NULL) {
+        free(temp);
         return false;
-    if (strlen(token) != 3 || !is_lowercase(token))
+    }
+    if (strlen(token) != 3 || !is_lowercase(token)) {
+        free(temp);
         return false;
+    }
 
+    free(temp);
     return true;
 }
 
@@ -85,13 +101,13 @@ bool valid_password(char *password) {
     return is_alphanumeric(password) && strlen(password) == PASS_SIZE;
 }
 
-bool is_valid_name(char* name) {
+bool valid_name(char *name) {
     if (name == NULL)
         return false;
     return strlen(name) <= 10 && is_alphanumeric(name);
 }
 
-bool is_valid_timeactive(char* timeactive) {
+bool valid_timeactive(char *timeactive) {
     if (timeactive == NULL)
         return false;
     return strlen(timeactive) <= DUR_SIZE && is_numeric(timeactive);
@@ -232,7 +248,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += CODE_SIZE + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) != UID_SIZE)
+    if (!valid_uid(token))
         return -1;
     if (uid != NULL) {
         memset(uid, 0, UID_SIZE + 1);
@@ -241,7 +257,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += UID_SIZE + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) != PASS_SIZE)
+    if (!valid_password(token))
         return -1;
     if (pass != NULL) {
         memset(pass, 0, PASS_SIZE + 1);
@@ -250,7 +266,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += PASS_SIZE + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) > NAME_SIZE)
+    if (!valid_name(token))
         return -1;
     if (name != NULL) {
         memset(name, 0, NAME_SIZE + 1);
@@ -259,7 +275,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += strlen(token) + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) > START_VAL_SIZE)
+    if (!valid_value(token))
         return -1;
     if (start_value != NULL) {
         memset(start_value, 0, START_VAL_SIZE + 1);
@@ -268,7 +284,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += strlen(token) + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) > TIME_SIZE)
+    if (!valid_timeactive(token))
         return -1;
     if (timeactive != NULL) {
         memset(timeactive, 0, TIME_SIZE + 1);
@@ -277,7 +293,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += strlen(token) + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) > FNAME_SIZE)
+    if (!valid_fname(token))
         return -1;
     if (fname != NULL) {
         memset(fname, 0, FNAME_SIZE + 1);
@@ -560,7 +576,7 @@ char *sas_ok_res(char *fname, char *fsize) {
     return msg;
 }
 
-char *src_ok_res(char *start_info, char* bids, char* end_info) {
+char *src_ok_res(char *start_info, char *bids, char *end_info) {
     int bids_size = bids == NULL ? 0 : strlen(bids);
     int end_info_size = end_info == NULL ? 0 : END_INFO_SIZE;
     int start_info_size = strlen(start_info);
@@ -588,7 +604,9 @@ char *src_ok_res(char *start_info, char* bids, char* end_info) {
 
     if (end_info_size != 0) {
         msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size] = ' ';
-        strcpy(&msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size + 1], end_info);
+        strcpy(
+            &msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size + 1],
+            end_info);
     }
 
     msg[res_size] = '\n';
