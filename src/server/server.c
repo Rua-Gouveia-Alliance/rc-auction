@@ -133,7 +133,7 @@ char *user_auctions(char *uid) {
         return default_res(LMA_RES, STATUS_NOK);
     }
 
-    char *auctions = list_auctions(dir, DEFAULT_LIMIT);
+    char *auctions = list_auctions(dir, NO_LIMIT);
     char *response = list_res(LMA_RES, auctions);
 
     free(dir);
@@ -154,7 +154,7 @@ char *user_bids(char *uid) {
         return default_res(LMB_RES, STATUS_NOK);
     }
 
-    char *auctions = list_auctions(dir, DEFAULT_LIMIT);
+    char *auctions = list_auctions(dir, NO_LIMIT);
     char *response = list_res(LMB_RES, auctions);
 
     free(dir);
@@ -165,15 +165,13 @@ char *user_bids(char *uid) {
 
 char *list() {
     char *dir = AUCTIONS_DIR;
-    if (count_entries(dir, DT_REG) == 0) {
+    if (count_entries(dir, DT_DIR) == 0)
         return default_res(LST_RES, STATUS_NOK);
-    }
 
     char *auctions = list_auctions(dir, NO_LIMIT);
     char *response = list_res(LST_RES, auctions);
 
     free(auctions);
-
     return response;
 }
 

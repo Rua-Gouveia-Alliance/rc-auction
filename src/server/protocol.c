@@ -478,7 +478,7 @@ int parse_src(char *msg, char *aid) {
 
 char *list_res(char *code, char *list) {
     // setup buffer
-    int msg_size = CODE_SIZE + 1 + 2 + 1 + strlen(list);
+    int msg_size = CODE_SIZE + 1 + 2 + 1 + strlen(list) - 1;
     char *msg = malloc((msg_size + 1) * sizeof(char));
     memset(msg, 0, (msg_size + 1) * sizeof(char));
 

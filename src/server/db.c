@@ -224,6 +224,8 @@ char *get_auction_state(char *aid) {
 char *list_auctions(char *dir_path, int limit) {
     DIR *dir;
     struct dirent *entry;
+    char *auctions, *auction_state;
+    int i, auction_count;
 
     // Open the directory
     dir = opendir(dir_path);
@@ -233,19 +235,27 @@ char *list_auctions(char *dir_path, int limit) {
     }
 
     // Read directory entries
-    int i = 0;
-    int auction_count = count_entries(dir_path, DT_REG);
+    i = 0;
+    auction_count = count_entries(dir_path, DT_DIR);
+    auction_count += count_entries(dir_path, DT_REG);
     if (auction_count == -1) {
         closedir(dir);
         return NULL;
     }
 
-    char *auctions =
-        (char *)malloc(sizeof(char) * auction_count * (AUCTION_STATE_SIZE + 1));
-    while (((entry = readdir(dir)) != NULL) && i < limit) {
+    auctions =
+        malloc((auction_count * (AUCTION_STATE_SIZE + 1) + 1) * sizeof(char));
+    memset(auctions, 0,
+           (auction_count * (AUCTION_STATE_SIZE + 1) + 1) * sizeof(char));
+
+    // TODO: ordenar
+    while (((entry = readdir(dir)) != NULL)) {
+        if (i > limit)
+            break;
+
         if (strcmp(entry->d_name, "..") != 0 &&
             strcmp(entry->d_name, ".") != 0) {
-            char *auction_state;
+
             if (entry->d_type == DT_REG) {
                 char *aid = remove_extension(entry->d_name);
                 auction_state = get_auction_state(aid);
@@ -253,7 +263,8 @@ char *list_auctions(char *dir_path, int limit) {
             } else if (entry->d_type == DT_DIR) {
                 auction_state = get_auction_state(entry->d_name);
             }
-            strcpy(auctions + i, auction_state);
+
+            strcpy(auctions + i * (AUCTION_STATE_SIZE + 1), auction_state);
             (auctions + i * (AUCTION_STATE_SIZE + 1))[AUCTION_STATE_SIZE] = ' ';
             i++;
             free(auction_state);
