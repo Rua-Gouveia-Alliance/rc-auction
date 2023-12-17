@@ -15,6 +15,8 @@ void logout();
 
 void unregister();
 
+bool exit_prompt();
+
 void open_auc(char *name, char *asset_fname, char *start_value,
               char *timeactive);
 
