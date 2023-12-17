@@ -1,5 +1,6 @@
 #include "protocol.h"
 #include "../util.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -628,44 +629,25 @@ char *sas_req(char *aid) {
 }
 
 bool is_valid_fname(char *fname) {
-    char *token;
-    char *temp;
-
-    if (fname == NULL) {
-        return false;
-    }
-    temp = malloc((strlen(fname) + 1) * sizeof(char));
-    memset(temp, 0, (strlen(fname) + 1) * sizeof(char));
-    strcpy(temp, fname);
-
-    if (strlen(fname) < 5 || strlen(fname) > 24) {
-        free(temp);
+    if (strlen(fname) > 24) {
         return false;
     }
 
-    // File name
-    token = strtok(temp, ".");
-    if (token == NULL) {
-        free(temp);
+    char *extension = strrchr(fname, '.');
+    if (extension == NULL)
         return false;
-    }
-    if (strlen(token) < 1 || !is_alphanumeric(token)) {
-        free(temp);
+
+    if (strlen(extension) != 4 || !is_lowercase(extension + 1))
         return false;
+
+    while (*fname != '\0') {
+        if (!(isalnum(*fname) || *fname == '-' || *fname == '_' ||
+              *fname == '.')) {
+            return false;
+        }
+        fname++;
     }
 
-    // File extension
-    token = strtok(NULL, " ");
-    if (token == NULL) {
-        free(temp);
-        return false;
-    }
-    if (strlen(token) != 3 || !is_lowercase(token)) {
-        free(temp);
-        return false;
-    }
-
-    free(temp);
     return true;
 }
 

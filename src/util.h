@@ -10,6 +10,8 @@ bool is_alphanumeric(const char *str);
 
 char *get_filename(char *dir, char *id, char *ext);
 
+char *get_filename_from_path(char *path);
+
 bool path_exists(char *path);
 
 char *time_to_str(time_t time);

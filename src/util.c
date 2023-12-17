@@ -54,6 +54,23 @@ char *get_filename(char *dir, char *id, char *ext) {
     return filename;
 }
 
+char *get_filename_from_path(char *path) {
+    char *file_name;
+
+    // Find the last occurrence of '/'
+    file_name = strrchr(path, '/');
+
+    // If fileName is not NULL, increment it to get the actual file name
+    if (file_name != NULL) {
+        if (strlen(file_name) == 1)
+            return NULL;
+        return file_name + 1;
+    } else {
+        return path;
+    }
+    return file_name;
+}
+
 bool path_exists(char *path) {
     struct stat st = {0};
     if (stat(path, &st) == -1)

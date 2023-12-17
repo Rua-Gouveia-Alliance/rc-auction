@@ -36,30 +36,26 @@ int interpret_req(char *msg) {
 }
 
 bool valid_fname(char *fname) {
-    bool found_ext = false;
-    int i;
-
-    if (fname == NULL) {
+    if (strlen(fname) > 24) {
         return false;
     }
 
-    for (i = 0; i < strlen(fname); i++) {
-        if (fname[i] == '.') {
-            if (i == 0 || i > 20 || i == strlen(fname) - 1)
-                return false;
-            found_ext = true;
-            break;
-        }
+    char *extension = strrchr(fname, '.');
+    if (extension == NULL)
+        return false;
 
-        if (!isalnum(fname[i]) && fname[i] != '-' && fname[i] != '_')
+    if (strlen(extension) != 4 || !is_lowercase(extension + 1))
+        return false;
+
+    while (*fname != '\0') {
+        if (!(isalnum(*fname) || *fname == '-' || *fname == '_' ||
+              *fname == '.')) {
             return false;
+        }
+        fname++;
     }
 
-    if (!found_ext)
-        return false;
-
-    // ext
-    return strlen(fname + i + 1) == 3 && is_lowercase(fname + i + 1);
+    return true;
 }
 
 bool valid_fsize(char *fsize) {

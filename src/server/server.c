@@ -324,14 +324,15 @@ bool treat_request(char *request, int socket) {
         char start_value[START_VAL_SIZE + 1];
         char timeactive[TIME_SIZE + 1];
         char fname[FNAME_SIZE + 1];
+        char fsize[FSIZE_SIZE + 1];
 
         if (parse_opa(request, uid, pass, name, start_value, timeactive, fname,
-                      NULL) != -1) {
+                      fsize) != -1) {
             if (verbose) {
                 printf("-----------------------------\n");
                 printf("Open Auction\nuid: %s\npass: %s\nname: %s\nstart "
-                       "value: %s\ntime active: %s\nfname: %s\n",
-                       uid, pass, name, start_value, timeactive, fname);
+                       "value: %s\ntime active: %s\nfname: %s\nfsize: %s\n",
+                       uid, pass, name, start_value, timeactive, fname, fsize);
             }
             response =
                 open_auc(uid, pass, name, start_value, timeactive, fname);

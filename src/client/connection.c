@@ -506,7 +506,7 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size,
 }
 
 char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
-                char *filename, int receive_size) {
+                char *filename, char *path, int receive_size) {
     int fd, errcode, written_bytes = 0;
     ssize_t n;
     socklen_t addrlen;
@@ -579,9 +579,9 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         return NULL;
     }
 
-    int file = open(filename, O_RDONLY);
+    int file = open(path, O_RDONLY);
     if (file == -1) {
-        printf("error: reading file failed (%s)\n", filename);
+        printf("error: reading file failed (%s)\n", path);
         free(buffer);
         freeaddrinfo(res);
         close(fd);
@@ -590,7 +590,7 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     struct stat st;
     int failed = fstat(file, &st);
     if (failed) {
-        printf("error: reading file failed (%s)\n", filename);
+        printf("error: reading file failed (%s)\n", path);
         free(buffer);
         freeaddrinfo(res);
         close(fd);
@@ -601,7 +601,7 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         memset(buffer, 0, PACKET_SIZE);
         n = read(file, buffer, PACKET_SIZE);
         if (n == -1) {
-            printf("error: reading file failed (%s)\n", filename);
+            printf("error: reading file failed (%s)\n", path);
             free(buffer);
             freeaddrinfo(res);
             close(fd);

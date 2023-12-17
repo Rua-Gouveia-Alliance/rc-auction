@@ -128,39 +128,22 @@ bool exit_prompt() {
     return true;
 }
 
-void open_auc(char *name, char *asset_fname, char *start_value,
-              char *timeactive) {
-    int fd;
-    char *request, *response;
+void open_auc(char *name, char *path, char *start_value, char *timeactive) {
+    int fd, file;
+    size_t file_bytes;
+    char *request, *response, *asset_fname;
 
-    if (!user.logged_in) {
-        printf("error: not logged in\n");
+    asset_fname = get_filename_from_path(path);
+    if (asset_fname == NULL) {
+        printf("error: not a file\n");
+        close(fd);
         return;
     }
-
-    if (!is_valid_name(name)) {
-        printf("erro: invalid name\n");
-        return;
-    }
-    if (!is_valid_fname(asset_fname)) {
-        printf("erro: invalid file name\n");
-        return;
-    }
-    if (!is_valid_value(start_value)) {
-        printf("erro: invalid start value\n");
-        return;
-    }
-    if (!is_valid_timeactive(timeactive)) {
-        printf("erro: invalid time active\n");
-        return;
-    }
-
-    fd = open(asset_fname, O_RDONLY);
+    fd = open(path, O_RDONLY);
     if (fd == -1) {
         printf("error: failed to open file\n");
         return;
     }
-
     struct stat st;
     int failed = fstat(fd, &st);
     if (failed) {
@@ -168,20 +151,50 @@ void open_auc(char *name, char *asset_fname, char *start_value,
         close(fd);
         return;
     }
-    int file_bytes = st.st_size;
+    file_bytes = st.st_size;
     if (file_bytes > MAX_FSIZE) {
         printf("error: file is too big\n");
         close(fd);
         return;
     }
+    close(fd);
+
+    if (!user.logged_in) {
+        printf("error: not logged in\n");
+        close(fd);
+        return;
+    }
+
+    if (!is_valid_name(name)) {
+        printf("erro: invalid name\n");
+        close(fd);
+        return;
+    }
+    if (!is_valid_fname(asset_fname)) {
+        printf("erro: invalid file name\n");
+        close(fd);
+        return;
+    }
+    if (!is_valid_value(start_value)) {
+        printf("erro: invalid start value\n");
+        close(fd);
+        return;
+    }
+    if (!is_valid_timeactive(timeactive)) {
+        printf("erro: invalid time active\n");
+        close(fd);
+        return;
+    }
+
     char *fsize = (char *)malloc(FSIZE_SIZE * sizeof(char));
     memset(fsize, 0, FSIZE_SIZE * sizeof(char));
-    sprintf(fsize, "%d", file_bytes);
+    sprintf(fsize, "%ld", file_bytes);
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
                       asset_fname, fsize);
+    printf("request: %s\n", request);
     response = send_file(asip, asport, request, strlen(request), asset_fname,
-                         DEFAULT_SIZE);
+                         path, DEFAULT_SIZE);
     if (response == NULL) {
         free(fsize);
         free(request);

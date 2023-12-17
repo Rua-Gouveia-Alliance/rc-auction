@@ -16,6 +16,6 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size,
                    bool print);
 
 char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
-                char *filename, int receive_size);
+                char *filename, char *path, int receive_size);
 
 #endif
