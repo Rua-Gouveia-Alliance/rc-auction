@@ -42,7 +42,7 @@ bool login_res(char *response, bool print) {
         return true;
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
         return false;
     }
 }
@@ -83,7 +83,7 @@ bool logout_res(char *response, bool print) {
         return true;
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
         return false;
     }
 }
@@ -124,7 +124,7 @@ bool unregister_res(char *response, bool print) {
         return true;
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
         return false;
     }
 }
@@ -194,7 +194,7 @@ void lmb_res(char *response, bool print) {
             printf("user is not logged in\n");
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
     }
 }
 
@@ -382,7 +382,7 @@ void src_res(char *response, bool print) {
             printf("the provided auction does not exist\n");
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
     }
 }
 
@@ -415,7 +415,7 @@ void lma_res(char *response, bool print) {
             printf("user is not logged in\n");
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
     }
 }
 
@@ -440,7 +440,7 @@ void list_res(char *response, bool print) {
             printf("no auctions started yet\n");
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
     }
 }
 
@@ -494,7 +494,7 @@ bool close_res(char *response, bool print) {
         return false;
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
         return false;
     }
 }
@@ -548,7 +548,7 @@ bool bid_res(char *response, bool print) {
         return false;
     } else {
         if (print)
-            printf("error: wrong server response format\n");
+            printf("error: server response error\n");
         return false;
     }
 }

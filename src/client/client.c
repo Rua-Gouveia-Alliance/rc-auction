@@ -36,6 +36,10 @@ void login(char *uid, char *password) {
 
     request = login_req(uid, password);
     response = use_udp(asip, asport, request, LIN_SIZE, DEFAULT_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
 
     ok = login_res(response, true);
     if (!ok) {
@@ -68,16 +72,15 @@ void logout() {
 
     request = logout_req(user.uid, user.password);
     response = use_udp(asip, asport, request, LOU_SIZE, DEFAULT_SIZE);
-
-    ok = logout_res(response, true);
-    if (!ok) {
+    if (response == NULL) {
         free(request);
-        free(response);
         return;
     }
 
-    // TODO: should we logout if logout goes wrong?
-    // clear current uid and password
+    ok = logout_res(response, true);
+    if (!ok)
+        printf("error: server side logout failed\n");
+
     memset(user.uid, 0, sizeof(user.uid));
     memset(user.password, 0, sizeof(user.password));
     user.logged_in = false;
@@ -98,6 +101,10 @@ void unregister() {
 
     request = unregister_req(user.uid, user.password);
     response = use_udp(asip, asport, request, UNR_SIZE, DEFAULT_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
 
     ok = unregister_res(response, true);
     if (!ok) {
@@ -178,6 +185,11 @@ void open_auc(char *name, char *asset_fname, char *start_value,
                       asset_fname, fsize);
     response = send_file(asip, asport, request, strlen(request), asset_fname,
                          DEFAULT_SIZE);
+    if (response == NULL) {
+        free(fsize);
+        free(request);
+        return;
+    }
 
     opa_res(response, true);
 
@@ -204,6 +216,10 @@ void close_auc(char *raw_aid) {
 
     request = close_req(user.uid, user.password, aid);
     response = use_tcp(asip, asport, request, CLS_SIZE, DEFAULT_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
 
     close_res(response, true);
 
@@ -224,6 +240,11 @@ void myauctions() {
 
     request = lma_req(user.uid);
     response = use_udp(asip, asport, request, LMA_SIZE, AUCTION_LIST_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
+
     lma_res(response, true);
 
     free(request);
@@ -241,6 +262,11 @@ void mybids() {
 
     request = lmb_req(user.uid);
     response = use_udp(asip, asport, request, LMB_SIZE, AUCTION_LIST_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
+
     lmb_res(response, true);
 
     free(request);
@@ -253,6 +279,11 @@ void list() {
 
     request = list_req();
     response = use_udp(asip, asport, request, LST_SIZE, AUCTION_LIST_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
+
     list_res(response, true);
 
     free(request);
@@ -274,7 +305,7 @@ void show_asset(char *raw_aid) {
     ok = transfer_file(asip, asport, request, SAS_SIZE);
 
     if (!ok)
-        printf("error: auction server couldn't send the image\n");
+        printf("error: failed to receive file\n");
 
     free(request);
     if (aid != raw_aid)
@@ -302,6 +333,10 @@ void bid(char *raw_aid, char *value) {
 
     request = bid_req(user.uid, user.password, aid, value);
     response = use_tcp(asip, asport, request, strlen(request), DEFAULT_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
 
     bid_res(response, true);
 
@@ -323,6 +358,10 @@ void show_record(char *raw_aid) {
 
     request = src_req(aid);
     response = use_udp(asip, asport, request, SRC_SIZE, BID_LIST_SIZE);
+    if (response == NULL) {
+        free(request);
+        return;
+    }
 
     src_res(response, true);
 
