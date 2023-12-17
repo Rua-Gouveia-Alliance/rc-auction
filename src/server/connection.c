@@ -427,9 +427,11 @@ bool prepare_freceive(int tcp_sock, bool keep, char *response, bool verbose) {
         }
 
         tcp_info->remaining_size -= n;
-        printf("info: received %ld bytes of file %s (socket %d). remaining %ld "
-               "bytes\n",
-               n, path, tcp_sock, tcp_info->remaining_size);
+        if (verbose)
+            printf("info: received %ld bytes of file %s (socket %d). remaining "
+                   "%ld "
+                   "bytes\n",
+                   n, path, tcp_sock, tcp_info->remaining_size);
         if (tcp_info->remaining_size < 1) {
             printf("info: finished receiving file (socket %d)\n", tcp_sock);
             if (tcp_info->remaining_size == -1) {

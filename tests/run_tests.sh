@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Loop through values from 1 to 22
-for i in {1..22}
+for i in {1..15}
 do
     # Run the command with [i] replaced by the current value
     echo "running $i"
