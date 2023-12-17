@@ -12,7 +12,8 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
 char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
               int receive_size);
 
-bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size);
+bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size,
+                   bool print);
 
 char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
                 char *filename, int receive_size);

@@ -299,7 +299,7 @@ void show_asset(char *raw_aid) {
     }
 
     request = sas_req(aid);
-    ok = transfer_file(asip, asport, request, SAS_SIZE);
+    ok = transfer_file(asip, asport, request, SAS_SIZE, true);
 
     if (!ok)
         printf("error: failed to receive file\n");

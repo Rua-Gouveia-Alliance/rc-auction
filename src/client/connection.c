@@ -270,7 +270,8 @@ int read_word(int fd, char *buffer) {
     return 0;
 }
 
-bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
+bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size,
+                   bool print) {
     int fd, errcode, read_bytes = 0;
     ssize_t n;
     socklen_t addrlen;
@@ -490,6 +491,8 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
         long new_pos = lseek(file, -1, SEEK_END);
         ftruncate(file, new_pos);
     }
+
+    printf("file saved as %s\n", file_name);
 
     free(status);
     free(file_name);
