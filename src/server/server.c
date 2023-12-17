@@ -43,7 +43,15 @@ char *login(char *uid, char *password) {
         // Failed password
         return default_res(LIN_RES, STATUS_NOK);
     }
-    // User registered and already logged in
+
+    if (!user_ok_password(uid, password)) {
+        // User registered and already logged in but request has wrong password
+        if (user_logout(uid) == -1)
+            return server_error_res();
+
+        return default_res(LIN_RES, STATUS_NOK);
+    }
+
     return default_res(LIN_RES, STATUS_OK);
 }
 
