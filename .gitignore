@@ -6,7 +6,4 @@ server
 !server/
 src/.vscode/
 .vscode/
-*.jpg
-*.png
-*.gif
 DB/
