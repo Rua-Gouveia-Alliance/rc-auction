@@ -135,8 +135,11 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
     char *status = (char *)malloc(7 * sizeof(char));
+    memset(status, 0, 7 * sizeof(char));
     char *file_name = (char *)malloc(25 * sizeof(char));
+    memset(file_name, 0, 25 * sizeof(char));
     char *file_size = (char *)malloc(9 * sizeof(char));
+    memset(file_size, 0, 9 * sizeof(char));
     char *buffer = (char *)malloc(PACKET_SIZE);
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket

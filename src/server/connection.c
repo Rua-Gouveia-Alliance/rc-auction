@@ -149,6 +149,7 @@ int accept_new_tcp(int tcp_main, bool verbose) {
     struct sockaddr_in addr;
     socklen_t addrlen;
 
+    addrlen = sizeof(addr);
     if ((newfd = accept(tcp_main, (struct sockaddr *)&addr, &addrlen)) == -1) {
         if (verbose)
             printf("error: couldn't accepted new tcp connection\n");

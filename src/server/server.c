@@ -9,6 +9,7 @@
 #include <getopt.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +23,21 @@
 
 static char asport[] = "58012"; // 58000 + group number
 static bool verbose = true;     // TODO: default is false
-static int tcp_main, udp_sock;
+static int tcp_main = -1, udp_sock = -1;
+
+void int_handler(int _) {
+    if (tcp_main != -1) {
+        close(tcp_main);
+        printf("info: closed tcp socket %d\n", tcp_main);
+    }
+    if (udp_sock != -1) {
+        printf("info: closed udp socket %d\n", udp_sock);
+        close(udp_sock);
+    }
+
+    printf("\nClosing server...\n");
+    exit(0);
+}
 
 char *login(char *uid, char *password) {
     if (!user_registered(uid)) {
@@ -666,6 +681,7 @@ void handle_sockets() {
 int main(int argc, char *argv[]) {
     create_defaults();
 
+    signal(SIGINT, int_handler);
     int opt;
     while ((opt = getopt(argc, argv, "p:v")) != -1) {
         switch (opt) {
