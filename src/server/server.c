@@ -576,7 +576,7 @@ void handle_sockets() {
     for (;;) {
         ready_sockets = current_sockets;
         memset((void *)&timeout, 0, sizeof(timeout));
-        timeout.tv_sec = 10;
+        timeout.tv_sec = TIMEOUT_SECS;
 
         out_select = select(FD_SETSIZE, &ready_sockets, NULL, NULL,
                             (struct timeval *)&timeout);

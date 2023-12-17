@@ -4,6 +4,7 @@
 #define CONNECTION_H
 
 #define PACKET_SIZE 8288
+#define TIMEOUT_SECS 5
 
 char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
               int receive_size);

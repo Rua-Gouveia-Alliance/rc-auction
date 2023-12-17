@@ -40,6 +40,23 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     }
 
     // send
+    fd_set writefds;
+    FD_ZERO(&writefds);
+    FD_SET(fd, &writefds);
+
+    struct timeval timeout;
+    memset((void *)&timeout, 0, sizeof(timeout));
+    timeout.tv_sec = TIMEOUT_SECS;
+
+    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return NULL;
+    }
+
     n = sendto(fd, msg, msg_size, 0, res->ai_addr, res->ai_addrlen);
     if (n == -1) {
         printf("error: communication with server failed\n");
@@ -47,6 +64,19 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     }
 
     // receive
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return NULL;
+    }
+
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, receive_size, 0, (struct sockaddr *)&addr,
                  &addrlen);
@@ -93,9 +123,41 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
         return NULL;
     }
 
+    // send
+    fd_set writefds;
+    FD_ZERO(&writefds);
+    FD_SET(fd, &writefds);
+
+    struct timeval timeout;
+    memset((void *)&timeout, 0, sizeof(timeout));
+    timeout.tv_sec = TIMEOUT_SECS;
+
+    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return NULL;
+    }
+
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        return NULL;
+    }
+
+    // receive
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
         return NULL;
     }
 
@@ -116,9 +178,44 @@ int read_word(int fd, char *buffer) {
     int i = 0;
     ssize_t n;
 
-    read(fd, &c, sizeof(char));
+    // receive
+    fd_set readfds, copyfds;
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    struct timeval timeout;
+    memset((void *)&timeout, 0, sizeof(timeout));
+    timeout.tv_sec = TIMEOUT_SECS;
+
+    copyfds = readfds;
+    int ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return -1;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return -1;
+    }
+
+    n = read(fd, &c, sizeof(char));
+    if (n == -1) {
+        printf("error: communication with server failed\n");
+        return -1;
+    }
     while (c != ' ') {
         buffer[i++] = c;
+
+        // receive
+        readfds = copyfds;
+        ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+        if (ready == -1) {
+            printf("error: communication with server failed\n");
+            return -1;
+        } else if (ready == 0) {
+            printf("error: connection with server timed out\n");
+            return -1;
+        }
+
         n = read(fd, &c, sizeof(char));
         if (n == -1) {
             printf("error: communication with server failed\n");
@@ -164,10 +261,43 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
         return false;
     }
 
+    // send
+    fd_set writefds;
+    FD_ZERO(&writefds);
+    FD_SET(fd, &writefds);
+
+    struct timeval timeout;
+    memset((void *)&timeout, 0, sizeof(timeout));
+    timeout.tv_sec = TIMEOUT_SECS;
+
+    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return NULL;
+    }
+
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
         return false;
+    }
+
+    // receive
+    fd_set readfds, copyfds;
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    copyfds = readfds;
+    ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        return -1;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return -1;
     }
 
     n = read(fd, status, 7);
@@ -200,6 +330,17 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     }
 
     while (read_bytes < file_bytes) {
+        // receive
+        readfds = copyfds;
+        ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
+        if (ready == -1) {
+            printf("error: communication with server failed\n");
+            return -1;
+        } else if (ready == 0) {
+            printf("error: connection with server timed out\n");
+            return -1;
+        }
+
         n = read(fd, buffer, PACKET_SIZE);
         if (n == -1) {
             printf("error: communication with server failed\n");
@@ -264,6 +405,26 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         return NULL;
     }
 
+    // send
+    fd_set writefds, copyfds;
+    FD_ZERO(&writefds);
+    FD_SET(fd, &writefds);
+
+    struct timeval timeout;
+    memset((void *)&timeout, 0, sizeof(timeout));
+    timeout.tv_sec = TIMEOUT_SECS;
+
+    copyfds = writefds;
+    int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+    if (ready == -1) {
+        printf("error: communication with server failed\n");
+        close(fd);
+        return NULL;
+    } else if (ready == 0) {
+        printf("error: connection with server timed out\n");
+        return NULL;
+    }
+
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
@@ -287,6 +448,17 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         n = read(file, buffer, PACKET_SIZE);
         if (n == -1) {
             printf("error: reading file failed (%s)\n", filename);
+            return NULL;
+        }
+
+        // receive
+        writefds = copyfds;
+        int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
+        if (ready == -1) {
+            printf("error: communication with server failed\n");
+            return NULL;
+        } else if (ready == 0) {
+            printf("error: connection with server timed out\n");
             return NULL;
         }
 
