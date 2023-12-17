@@ -45,7 +45,7 @@ bool valid_fname(char *fname) {
 
     for (i = 0; i < strlen(fname); i++) {
         if (fname[i] == '.') {
-            if (i == 0 || i == strlen(fname) - 1)
+            if (i == 0 || i > 20 || i == strlen(fname) - 1)
                 return false;
             found_ext = true;
             break;
