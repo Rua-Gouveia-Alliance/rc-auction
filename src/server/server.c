@@ -215,14 +215,14 @@ char *bid(char *uid, char *password, char *aid, char *value) {
 char *show_record(char *aid) {
     if (!auction_exists(aid))
         return default_res(SRC_RES, STATUS_NOK);
-    
+
     auction_update(aid);
 
-    char* start_info = fmt_start_info(aid);
-    char* bids = list_bids(aid, DEFAULT_LIMIT);
-    char* end_info = fmt_end_info(aid);
-    char* ok_res = src_ok_res(start_info, bids, end_info);
-    
+    char *start_info = fmt_start_info(aid);
+    char *bids = list_bids(aid, DEFAULT_LIMIT);
+    char *end_info = fmt_end_info(aid);
+    char *ok_res = src_ok_res(start_info, bids, end_info);
+
     free(start_info);
 
     if (bids != NULL)
@@ -230,7 +230,7 @@ char *show_record(char *aid) {
 
     if (end_info != NULL)
         free(end_info);
-    
+
     return ok_res;
 }
 
@@ -238,54 +238,66 @@ bool treat_request(char *request, int socket) {
     int id;
     char *response;
 
-    if (verbose)
-        printf("Received request: %s", request);
-
     id = interpret_req(request);
     switch (id) {
     case LIN: {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        if (parse_lin(request, uid, pass) != -1)
+        if (parse_lin(request, uid, pass) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Login\nuid: %s\npass: %s\n", uid, pass);
+            }
             response = login(uid, pass);
-        else
+        } else
             response = bad_syntax_res();
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case LOU: {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        if (parse_lou(request, uid, pass) != -1)
+        if (parse_lou(request, uid, pass) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Logout\nuid: %s\npass: %s\n", uid, pass);
+            }
             response = logout(uid, pass);
-        else
+        } else
             response = bad_syntax_res();
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case UNR: {
         char uid[UID_SIZE + 1];
         char pass[PASS_SIZE + 1];
 
-        if (parse_unr(request, uid, pass) != -1)
+        if (parse_unr(request, uid, pass) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Unregister\nuid: %s\npass: %s\n", uid, pass);
+            }
             response = unregister(uid, pass);
-        else
+        } else
             response = bad_syntax_res();
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case OPA: {
@@ -297,20 +309,32 @@ bool treat_request(char *request, int socket) {
         char fname[FNAME_SIZE + 1];
 
         if (parse_opa(request, uid, pass, name, start_value, timeactive, fname,
-                      NULL) != -1)
+                      NULL) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Open Auction\nuid: %s\npass: %s\nname: %s\nstart "
+                       "value: %s\ntime active: %s\nfname: %s\n",
+                       uid, pass, name, start_value, timeactive, fname);
+            }
             response =
                 open_auc(uid, pass, name, start_value, timeactive, fname);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
         if (is_req_ok(response)) {
             free(request);
-            return prepare_freceive(socket, true, response);
+            return prepare_freceive(socket, true, response, verbose);
         } else {
-            return prepare_freceive(socket, false, response);
+            return prepare_freceive(socket, false, response, verbose);
         }
         break;
     }
@@ -319,72 +343,119 @@ bool treat_request(char *request, int socket) {
         char pass[PASS_SIZE + 1];
         char aid[AID_SIZE + 1];
 
-        if (parse_cls(request, uid, pass, aid) != -1)
+        if (parse_cls(request, uid, pass, aid) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Close Auction\nuid: %s\npass: %s\naid: %s\n", uid, pass,
+                       aid);
+            }
             response = close_auc(uid, pass, aid);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_tcp(socket, response);
+        send_tcp(socket, response, verbose);
         break;
     }
     case LMA: {
         char uid[UID_SIZE + 1];
 
-        if (parse_lma(request, uid) != -1)
+        if (parse_lma(request, uid) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("User Auctions\nuid: %s\n", uid);
+            }
             response = user_auctions(uid);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case LMB: {
         char uid[UID_SIZE + 1];
 
-        if (parse_lmb(request, uid) != -1)
+        if (parse_lmb(request, uid) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("User Bids\nuid: %s\n", uid);
+            }
             response = user_bids(uid);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case LST: {
+        if (verbose) {
+            printf("-----------------------------\n");
+            printf("List\n");
+        }
+
         response = list();
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     case SAS: {
         char aid[AID_SIZE + 1];
         char *path;
 
-        if (parse_sas(request, aid) != -1)
+        if (parse_sas(request, aid) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Show Asset\naid: %s\n", aid);
+            }
             response = show_asset(aid);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
         if (is_req_ok(response)) {
             path = auction_asset_path(aid);
-            send_tcp_file(socket, response, path);
+            send_tcp_file(socket, response, path, verbose);
             free(path);
         } else {
-            send_tcp(socket, response);
+            send_tcp(socket, response, verbose);
         }
         break;
     }
@@ -394,37 +465,68 @@ bool treat_request(char *request, int socket) {
         char aid[AID_SIZE + 1];
         char value[START_VAL_SIZE + 1];
 
-        if (parse_bid(request, uid, pass, aid, value) != -1)
+        if (parse_bid(request, uid, pass, aid, value) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bid\nuid: %s\npath: %s\naid: %s\nvalue: %s", uid, pass,
+                       aid, value);
+            }
             response = bid(uid, pass, aid, value);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_tcp(socket, response);
+        send_tcp(socket, response, verbose);
         break;
     }
     case SRC: {
         char aid[AID_SIZE + 1];
 
-        if (parse_src(request, aid) != -1)
+        if (parse_src(request, aid) != -1) {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Show Record\naid: %s\n", aid);
+            }
             response = show_record(aid);
-        else
+        } else {
+            if (verbose) {
+                printf("-----------------------------\n");
+                printf("Bad Format\nReceived: %s\n", request);
+            }
             response = bad_syntax_res();
+        }
 
         if (verbose)
-            printf("Sent: %s", response);
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
 
-        send_udp(socket, response, NULL);
+        send_udp(socket, response, NULL, verbose);
         break;
     }
     default: {
+        if (verbose) {
+            printf("-----------------------------\n");
+            printf("Bad Format\nReceived: %s\n", request);
+        }
+
         response = bad_syntax_res();
+
+        if (verbose)
+            printf("Sending: %s\n", response);
+        printf("-----------------------------\n\n");
+
         if (socket == udp_sock)
-            send_udp(socket, response, NULL);
+            send_udp(socket, response, NULL, verbose);
         else
-            send_tcp(socket, response);
+            send_tcp(socket, response, verbose);
         break;
     }
     }
@@ -463,9 +565,19 @@ void handle_sockets() {
                 if (FD_ISSET(i, &ready_sockets)) {
                     if (i != tcp_main && i != udp_sock) {
                         char *bad_syntax = bad_syntax_res();
-                        send_tcp(i, bad_syntax);
+
+                        if (verbose) {
+                            printf("info: timeout on port %d (tcp)\n", i);
+                            printf("Sending: %s\n", bad_syntax);
+                        }
+
+                        send_tcp(i, bad_syntax, verbose);
                         free(bad_syntax);
                         FD_CLR(i, &current_sockets);
+                        if (verbose)
+                            printf("info: removed port %d (tcp) from "
+                                   "set\n",
+                                   i);
                     }
                 }
             }
@@ -480,22 +592,58 @@ void handle_sockets() {
                 if (FD_ISSET(i, &ready_sockets)) {
                     if (i == tcp_main) {
                         // new tcp connecton
-                        temp_sock = accept_new_tcp(tcp_main);
-                        if (temp_sock != -1)
+                        temp_sock = accept_new_tcp(tcp_main, verbose);
+                        if (temp_sock != -1) {
+                            if (verbose)
+                                printf("info: new conn on port %d (tcp)\n",
+                                       temp_sock);
                             FD_SET(temp_sock, &current_sockets);
+                        }
                     } else if (i == udp_sock) {
-                        buffer = receive_udp(udp_sock);
-                        if (buffer != NULL)
+                        buffer = receive_udp(udp_sock, verbose);
+                        if (buffer != NULL) {
+                            if (verbose)
+                                printf("info: packet received (udp)\n");
                             treat_request(buffer, i);
+                        }
                     } else {
-                        buffer = receive_tcp(i);
+                        buffer = receive_tcp(i, verbose);
                         if (buffer != NULL) {
                             if (buffer[0] == '\n') {
+                                // OPA finished
                                 free(buffer);
                                 FD_CLR(i, &current_sockets);
+                                if (verbose)
+                                    printf("info: finished receiving file. "
+                                           "removed port %d (tcp) from "
+                                           "set\n",
+                                           i);
+                            } else if (buffer[0] == '\0') {
+                                // critical connection error
+                                char *error_res = server_error_res();
+                                if (verbose)
+                                    printf("info: sending (socket %d): %s\n", i,
+                                           error_res);
+
+                                send_tcp(i, error_res, verbose);
+                                free(error_res);
+                                FD_CLR(i, &current_sockets);
+                                if (verbose)
+                                    printf("info: removed port %d (tcp) from "
+                                           "set\n",
+                                           i);
                             } else {
-                                if (treat_request(buffer, i))
+                                if (verbose)
+                                    printf("info: packet received on port %d "
+                                           "(tcp)\n",
+                                           i);
+                                if (treat_request(buffer, i)) {
                                     FD_CLR(i, &current_sockets);
+                                    if (verbose)
+                                        printf("info: removed port %d (tcp) "
+                                               "from set\n",
+                                               i);
+                                }
                             }
                         }
                     }
@@ -526,5 +674,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    printf("Auction Server\n");
+    printf("Server PORT: %s\n\n", asport);
     handle_sockets();
 }

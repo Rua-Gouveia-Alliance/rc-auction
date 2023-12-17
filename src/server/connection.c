@@ -82,8 +82,10 @@ int setup_tcp(char *port) {
     struct addrinfo hints, *res;
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd == -1)
+    if (fd == -1) {
+        printf("critical: failed to create tcp socket (port %s)\n", port);
         exit(1);
+    }
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
@@ -91,15 +93,21 @@ int setup_tcp(char *port) {
     hints.ai_flags = AI_PASSIVE;
 
     errcode = getaddrinfo(NULL, port, &hints, &res);
-    if ((errcode) != 0)
+    if ((errcode) != 0) {
+        printf("critical: failed getaddrinfo on tcp socket (port %s)\n", port);
         exit(1);
+    }
 
     n = bind(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
+    if (n == -1) {
+        printf("critical: failed bind on tcp socket (port %s)\n", port);
         exit(1);
+    }
 
-    if (listen(fd, 5) == -1)
+    if (listen(fd, 5) == -1) {
+        printf("critical: failed listen on tcp socket (port %s)\n", port);
         exit(1);
+    }
 
     return fd;
 }
@@ -110,8 +118,10 @@ int setup_udp(char *port) {
     struct addrinfo hints, *res;
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd == -1)
+    if (fd == -1) {
+        printf("critical: failed to create udp socket (port %s)\n", port);
         exit(1);
+    }
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
@@ -119,36 +129,46 @@ int setup_udp(char *port) {
     hints.ai_flags = AI_PASSIVE;
 
     errcode = getaddrinfo(NULL, port, &hints, &res);
-    if (errcode != 0)
+    if (errcode != 0) {
+        printf("critical: failed getaddrinfo on udp socket (port %s)\n", port);
         exit(1);
+    }
 
     n = bind(fd, res->ai_addr, res->ai_addrlen);
-    if (n == -1)
+    if (n == -1) {
+        printf("critical: failed bind on tcp socket (port %s)\n", port);
         exit(1);
+    }
 
     return fd;
 }
 
-int accept_new_tcp(int tcp_main) {
+int accept_new_tcp(int tcp_main, bool verbose) {
     TCPInfo *tcp_info;
     int newfd;
     struct sockaddr_in addr;
     socklen_t addrlen;
 
     if ((newfd = accept(tcp_main, (struct sockaddr *)&addr, &addrlen)) == -1) {
-        printf("error: tcp connection not accepted\n");
-        exit(1);
+        if (verbose)
+            printf("error: couldn't accepted new tcp connection\n");
+        return -1;
     }
 
-    tcp_info = get_tcpinfo(tcp_main);
+    tcp_info = get_tcpinfo(newfd);
     if (tcp_info == NULL) {
-        printf("error: too many clients\n");
+        if (verbose)
+            printf("error: too many tcp clients\n");
+        char *error_res = server_error_res();
+        send_tcp(newfd, error_res, verbose);
+        free(error_res);
+        close(newfd);
         return -1;
     }
     return newfd;
 }
 
-char *receive_udp(int udp_sock) {
+char *receive_udp(int udp_sock, bool verbose) {
     ssize_t n;
     socklen_t addrlen;
     char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
@@ -158,14 +178,15 @@ char *receive_udp(int udp_sock) {
     n = recvfrom(udp_sock, buffer, DEFAULT_SIZE, 0,
                  (struct sockaddr *)&last_addr, &addrlen);
     if (n == -1) {
-        printf("error: udp receive error\n");
-        exit(1);
+        if (verbose)
+            printf("error: udp receive error\n");
+        return NULL;
     }
 
     return buffer;
 }
 
-char *receive_tcp(int tcp_sock) {
+char *receive_tcp(int tcp_sock, bool verbose) {
     char *str, *path;
     TCPInfo *tcp_info;
     ssize_t n;
@@ -175,28 +196,47 @@ char *receive_tcp(int tcp_sock) {
 
     tcp_info = get_tcpinfo(tcp_sock);
     addrlen = sizeof(addr);
+
+    // OPA in file
     if (tcp_info->in_file) {
         path = fpath_from_roa(tcp_info->final_response, tcp_info->fname);
         int file = open(path, O_CREAT | O_WRONLY | O_APPEND, DEFAULT_PERMS);
-        free(path);
         if (file == -1) {
-            printf("error: create file failed\n");
-            exit(1);
+            if (verbose)
+                printf("error: create file failed (%s)\n", path);
+            str = malloc(2 * sizeof(char));
+            str[0] = '\0';
+            str[1] = '\0';
+            free(path);
+            return str;
         }
 
         n = read(tcp_sock, tcp_info->buffer, DEFAULT_SIZE);
         if (n == -1) {
-            printf("error: tcp read error");
-            exit(1);
+            if (verbose)
+                printf("error: tcp read error (socket %d)\n", tcp_sock);
+            str = malloc(2 * sizeof(char));
+            str[0] = '\0';
+            str[1] = '\0';
+            free(path);
+            return str;
         }
 
         n = write(file, tcp_info->buffer, n);
         if (n == -1) {
-            printf("error: write to file error\n");
-            exit(1);
+            if (verbose)
+                printf("error: write to file error (%s)\n", path);
+            str = malloc(2 * sizeof(char));
+            str[0] = '\0';
+            str[1] = '\0';
+            free(path);
+            return str;
         }
 
         tcp_info->remaining_size -= n;
+        printf("info: received %ld bytes of file %s (socket %d). remaining %ld "
+               "bytes",
+               n, path, tcp_sock, tcp_info->remaining_size);
         if (tcp_info->remaining_size < 1) {
             if (tcp_info->remaining_size == -1) {
                 // remove \n from file
@@ -205,25 +245,31 @@ char *receive_tcp(int tcp_sock) {
             }
 
             close(file);
-            send_tcp(tcp_sock, tcp_info->final_response);
+            send_tcp(tcp_sock, tcp_info->final_response, verbose);
             rm_tcpconn(tcp_sock);
             str = malloc(2 * sizeof(char));
             str[0] = '\n';
             str[1] = '\0';
+            free(path);
             return str;
         }
         close(file);
+        free(path);
         return NULL;
     }
 
     n = read(tcp_sock, tcp_info->buffer + tcp_info->buffer_i,
              DEFAULT_SIZE - tcp_info->buffer_i);
     if (n == -1) {
-        printf("error: tcp read error");
-        exit(1);
+        if (verbose)
+            printf("error: tcp read error (socket %d)\n", tcp_sock);
+        str = malloc(2 * sizeof(char));
+        str[0] = '\0';
+        str[1] = '\0';
+        return str;
     }
 
-    // OPA case
+    // check OPA case
     int i;
     char fname[FNAME_SIZE + 1];
     char fsize[FSIZE_SIZE + 1];
@@ -245,7 +291,7 @@ char *receive_tcp(int tcp_sock) {
     return NULL;
 }
 
-void send_udp(int udp_sock, char *msg, struct sockaddr_in *addr) {
+void send_udp(int udp_sock, char *msg, struct sockaddr_in *addr, bool verbose) {
     socklen_t addrlen;
     ssize_t n;
 
@@ -257,71 +303,94 @@ void send_udp(int udp_sock, char *msg, struct sockaddr_in *addr) {
     n = sendto(udp_sock, msg, strlen(msg), 0, (struct sockaddr *)&last_addr,
                addrlen);
     if (n == -1) {
-        printf("error: failed to send udp response");
-        exit(1);
+        if (verbose)
+            printf("error: failed to send udp response\n");
     }
 }
 
-void send_tcp(int tcp_sock, char *msg) {
+void send_tcp(int tcp_sock, char *msg, bool verbose) {
     ssize_t n;
 
     n = write(tcp_sock, msg, strlen(msg));
     if (n == -1) {
-        printf("error: failed to send tcp response\n");
-        exit(1);
+        if (verbose)
+            printf("error: failed to send tcp response (socket %d)\n",
+                   tcp_sock);
     }
 
     close(tcp_sock);
     rm_tcpconn(tcp_sock);
 }
 
-void send_tcp_file(int tcp_sock, char *msg, char *path) {
+void send_tcp_file(int tcp_sock, char *msg, char *path, bool verbose) {
     ssize_t n;
     long int file_bytes, written_bytes = 0;
     char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
 
     n = write(tcp_sock, msg, strlen(msg));
     if (n == -1) {
-        printf("error: failed to send tcp response\n");
-        exit(1);
+        if (verbose)
+            printf("error: failed to send tcp response (socket %d)\n",
+                   tcp_sock);
+        close(tcp_sock);
+        rm_tcpconn(tcp_sock);
+        return;
     }
 
     file_bytes = file_size(path);
     int file = open(path, O_RDONLY);
     if (file == -1) {
-        printf("error: opening file failed\n");
-        exit(1);
+        if (verbose)
+            printf("error: opening file failed (%s)\n", path);
+        close(tcp_sock);
+        rm_tcpconn(tcp_sock);
+        return;
     }
     while (written_bytes < file_bytes) {
         memset(buffer, 0, DEFAULT_SIZE * sizeof(char));
         n = read(file, buffer, DEFAULT_SIZE);
         if (n == -1) {
-            printf("error: reading file failed (%s)\n", path);
-            exit(1);
+            if (verbose)
+                printf("error: reading file failed (%s)\n", path);
+            close(file);
+            close(tcp_sock);
+            rm_tcpconn(tcp_sock);
+            return;
         }
 
         n = write(tcp_sock, buffer, n);
         if (n == -1) {
-            printf("error: communication with client failed\n");
-            exit(1);
+            if (verbose)
+                printf("error: write to tcp failed (socket %d)\n", tcp_sock);
+            close(file);
+            close(tcp_sock);
+            rm_tcpconn(tcp_sock);
+            return;
         }
 
         written_bytes += n;
     }
-    write(tcp_sock, "\n", 1);
+    n = write(tcp_sock, "\n", 1);
+    if (n == -1) {
+        if (verbose)
+            printf("error: write to tcp failed (socket %d)\n", tcp_sock);
+        close(file);
+        close(tcp_sock);
+        rm_tcpconn(tcp_sock);
+        return;
+    }
 
     close(file);
     close(tcp_sock);
     rm_tcpconn(tcp_sock);
 }
 
-bool prepare_freceive(int tcp_sock, bool keep, char *response) {
+bool prepare_freceive(int tcp_sock, bool keep, char *response, bool verbose) {
     char *path, *str;
     size_t n;
 
     if (!keep) {
-        send_tcp(tcp_sock, response);
-        rm_tcpconn(tcp_sock);
+        send_tcp(tcp_sock, response, verbose);
         return true;
     }
 
@@ -330,24 +399,35 @@ bool prepare_freceive(int tcp_sock, bool keep, char *response) {
 
     path = fpath_from_roa(tcp_info->final_response, tcp_info->fname);
     int file = open(path, O_CREAT | O_WRONLY | O_APPEND, DEFAULT_PERMS);
-    free(path);
-
     if (file == -1) {
-        printf("error: create file failed\n");
-        exit(1);
+        if (verbose)
+            printf("error: create file failed (%s)\n", path);
+        char *error_res = server_error_res();
+        send_tcp(tcp_sock, error_res, verbose);
+        free(error_res);
+        free(path);
+        return true;
     }
 
     if (tcp_info->excess) {
-        // TODO: nao escrever \n
         n = write(file, tcp_info->buffer + tcp_info->buffer_i,
                   tcp_info->excess);
         if (n == -1) {
-            printf("error: write to file error\n");
-            exit(1);
+            if (verbose)
+                printf("error: write to file error (%s)\n", path);
+            char *error_res = server_error_res();
+            send_tcp(tcp_sock, error_res, verbose);
+            free(error_res);
+            free(path);
+            return true;
         }
 
         tcp_info->remaining_size -= n;
+        printf("info: received %ld bytes of file %s (socket %d). remaining %ld "
+               "bytes",
+               n, path, tcp_sock, tcp_info->remaining_size);
         if (tcp_info->remaining_size < 1) {
+            printf("info: finished receiving file (socket %d)\n", tcp_sock);
             if (tcp_info->remaining_size == -1) {
                 // remove \n from file
                 long new_pos = lseek(file, -1, SEEK_END);
@@ -355,9 +435,11 @@ bool prepare_freceive(int tcp_sock, bool keep, char *response) {
             }
 
             close(file);
-            send_tcp(tcp_sock, tcp_info->final_response);
+            send_tcp(tcp_sock, tcp_info->final_response, verbose);
+            free(path);
             return true;
         }
     }
+    free(path);
     return false;
 }
