@@ -63,6 +63,7 @@ bool path_exists(char *path) {
 
 char *time_to_str(time_t time) {
     char *time_str = malloc((DATE_TIME_SIZE + 1) * sizeof(char));
+    memset(time_str, 0, (DATE_TIME_SIZE + 1) * sizeof(char));
     struct tm *current_time = gmtime(&time);
     sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d",
             current_time->tm_year + 1900, current_time->tm_mon + 1,
@@ -74,6 +75,7 @@ char *time_to_str(time_t time) {
 
 char *i_to_aid(int i) {
     char *aid = malloc((AID_SIZE + 1) * sizeof(char));
+    memset(aid, 0, (AID_SIZE + 1) * sizeof(char));
     sprintf(aid, "%03d", i);
     return aid;
 }
@@ -107,6 +109,7 @@ int count_entries(char *path, int type) {
 char *remove_extension(char *file) {
     int name_size = strlen(file) - 4;
     char *file_name = (char *)malloc(sizeof(char) * (name_size + 1));
+    memset(file_name, 0, sizeof(char) * (name_size + 1));
     strncpy(file_name, file, name_size);
     file_name[name_size] = '\0';
     return file_name;

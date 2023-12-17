@@ -214,6 +214,7 @@ int set_current_bid(char *aid, char *value) {
 char *get_auction_state(char *aid) {
     char *auction_state =
         (char *)malloc(sizeof(char) * (AUCTION_STATE_SIZE + 1));
+    memset(auction_state, 0, sizeof(char) * (AUCTION_STATE_SIZE + 1));
     int active = !auction_closed(aid);
 
     sprintf(auction_state, "%s %d", aid, active);
@@ -468,13 +469,13 @@ char *auction_start_info(char *aid) {
 
 char *fmt_start_info(char *aid) {
     char *info = (char *)malloc(sizeof(char) * (FMT_INFO_SIZE + 1));
+    memset(info, 0, sizeof(char) * (FMT_INFO_SIZE + 1));
     char uid[UID_SIZE + 1], name[NAME_SIZE + 1], fname[FNAME_SIZE + 1];
     char start_value[START_VAL_SIZE + 1], timeactive[DUR_SIZE + 1],
         start_datetime[DATE_TIME_SIZE + 1];
 
     auction_parse_info(aid, uid, name, fname, start_value, timeactive,
                        start_datetime, NULL);
-    memset(info, 0, sizeof(char) * (FMT_INFO_SIZE + 1));
     sprintf(info, "%s %s %s %s %s %s", uid, name, fname, start_value,
             start_datetime, timeactive);
 
@@ -838,6 +839,7 @@ int get_current_bid(char *aid) {
     char *dir = auction_dir(aid);
     char *file = get_filename(dir, CURRENT_BID, TXT_SUFIX);
     char *value = (char *)malloc(sizeof(char) * (BID_VALUE_SIZE + 1));
+    memset(value, 0, sizeof(char) * (BID_VALUE_SIZE + 1));
 
     fd = open(file, O_RDONLY);
     free(dir);
@@ -879,6 +881,7 @@ int bid_value_ok(char *aid, char *value) {
 char *create_bid_info(char *uid, char *value, time_t auction_start) {
     time_t current_time = time(NULL);
     char *bid_info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
+    memset(bid_info, 0, sizeof(char) * (BID_INFO_LEN + 1));
     char *formatted_time = time_to_str(current_time);
 
     sprintf(bid_info, "%s %s %s %ld", uid, value, formatted_time,

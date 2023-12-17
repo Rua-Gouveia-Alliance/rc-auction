@@ -329,6 +329,7 @@ void send_tcp_file(int tcp_sock, char *msg, char *path, bool verbose) {
     ssize_t n;
     long int file_bytes, written_bytes = 0;
     char *buffer = malloc(DEFAULT_SIZE * sizeof(char));
+    memset(buffer, 0, DEFAULT_SIZE * sizeof(char));
 
     n = write(tcp_sock, msg, strlen(msg));
     if (n == -1) {

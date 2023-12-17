@@ -19,6 +19,7 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
     char *buffer = (char *)malloc((receive_size + 1) * sizeof(char));
+    memset(buffer, 0, (receive_size + 1) * sizeof(char));
 
     // setup socket
     fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -36,6 +37,8 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
     if (errcode != 0) {
         printf("error: communication with server failed\n");
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
@@ -51,15 +54,24 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
     n = sendto(fd, msg, msg_size, 0, res->ai_addr, res->ai_addrlen);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
@@ -71,9 +83,15 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
     ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
@@ -83,6 +101,9 @@ char *use_udp(char *ip_addr, char *port, char *msg, int msg_size,
 
     if (n == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
     buffer[n] = '\0';
@@ -100,10 +121,12 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
     char *buffer = (char *)malloc((receive_size + 1) * sizeof(char));
+    memset(buffer, 0, (receive_size + 1) * sizeof(char));
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
     if (fd == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
         return NULL;
     }
 
@@ -114,12 +137,17 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
     if (errcode != 0) {
         printf("error: communication with server failed\n");
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
@@ -135,15 +163,24 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
     int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
@@ -155,21 +192,29 @@ char *use_tcp(char *ip_addr, char *port, char *msg, int msg_size,
     ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
     n = read(fd, buffer, receive_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        freeaddrinfo(res);
+        close(fd);
+        free(buffer);
         return NULL;
     }
 
     freeaddrinfo(res);
     close(fd);
-
     return buffer;
 }
 
@@ -238,10 +283,15 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     char *file_size = (char *)malloc(9 * sizeof(char));
     memset(file_size, 0, 9 * sizeof(char));
     char *buffer = (char *)malloc(PACKET_SIZE);
+    memset(buffer, 0, PACKET_SIZE);
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
     if (fd == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
         return false;
     }
 
@@ -252,12 +302,23 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
     if (errcode != 0) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        close(fd);
         return false;
     }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return false;
     }
 
@@ -273,15 +334,33 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
 
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return false;
     }
 
@@ -294,15 +373,33 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return -1;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return -1;
     }
 
     n = read(fd, status, 7);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return false;
     }
 
@@ -313,7 +410,6 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
         free(file_name);
         free(file_size);
         free(buffer);
-
         freeaddrinfo(res);
         close(fd);
         return false;
@@ -326,6 +422,12 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     int file = open(file_name, O_CREAT | O_WRONLY, 0666);
     if (file == -1) {
         printf("error: writing to file failed (%s)\n", file_name);
+        free(status);
+        free(file_name);
+        free(file_size);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return false;
     }
 
@@ -335,21 +437,49 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
         ready = select(fd + 1, &readfds, NULL, NULL, &timeout);
         if (ready == -1) {
             printf("error: communication with server failed\n");
+            free(status);
+            free(file_name);
+            free(file_size);
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return -1;
         } else if (ready == 0) {
             printf("error: connection with server timed out\n");
+            free(status);
+            free(file_name);
+            free(file_size);
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return -1;
         }
 
         n = read(fd, buffer, PACKET_SIZE);
         if (n == -1) {
             printf("error: communication with server failed\n");
+            free(status);
+            free(file_name);
+            free(file_size);
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return false;
         }
 
         n = write(file, buffer, n);
         if (n == -1) {
             printf("error: writing to file failed (%s)\n", file_name);
+            free(status);
+            free(file_name);
+            free(file_size);
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return false;
         }
 
@@ -369,7 +499,6 @@ bool transfer_file(char *ip_addr, char *port, char *msg, int msg_size) {
     freeaddrinfo(res);
     close(fd);
     close(file);
-
     return true;
 }
 
@@ -381,11 +510,14 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     struct sockaddr_in addr;
     struct addrinfo hints, *res;
     char *buffer = (char *)malloc(PACKET_SIZE);
+    memset(buffer, 0, PACKET_SIZE);
     char *response = (char *)malloc((receive_size + 1) * sizeof(char));
+    memset(response, 0, (receive_size + 1) * sizeof(char));
 
     fd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
     if (fd == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
         return NULL;
     }
 
@@ -396,12 +528,17 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     errcode = getaddrinfo(ip_addr, port, &hints, &res);
     if (errcode != 0) {
         printf("error: communication with server failed\n");
+        free(buffer);
+        close(fd);
         return NULL;
     }
 
     n = connect(fd, res->ai_addr, res->ai_addrlen);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
 
@@ -418,28 +555,42 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
     if (ready == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
+        freeaddrinfo(res);
         close(fd);
         return NULL;
     } else if (ready == 0) {
         printf("error: connection with server timed out\n");
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
 
     n = write(fd, msg, msg_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
 
     int file = open(filename, O_RDONLY);
     if (file == -1) {
         printf("error: reading file failed (%s)\n", filename);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
     struct stat st;
     int failed = fstat(file, &st);
     if (failed) {
         printf("error: reading file failed (%s)\n", filename);
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
         return NULL;
     }
     int file_bytes = st.st_size;
@@ -448,6 +599,10 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         n = read(file, buffer, PACKET_SIZE);
         if (n == -1) {
             printf("error: reading file failed (%s)\n", filename);
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return NULL;
         }
 
@@ -456,15 +611,27 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
         int ready = select(fd + 1, NULL, &writefds, NULL, &timeout);
         if (ready == -1) {
             printf("error: communication with server failed\n");
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return NULL;
         } else if (ready == 0) {
             printf("error: connection with server timed out\n");
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return NULL;
         }
 
         n = write(fd, buffer, n);
         if (n == -1) {
             printf("error: communication with server failed\n");
+            free(buffer);
+            freeaddrinfo(res);
+            close(fd);
+            close(file);
             return NULL;
         }
 
@@ -475,14 +642,16 @@ char *send_file(char *ip_addr, char *port, char *msg, int msg_size,
     n = read(fd, response, receive_size);
     if (n == -1) {
         printf("error: communication with server failed\n");
+        free(buffer);
+        freeaddrinfo(res);
+        close(fd);
+        close(file);
         return NULL;
     }
 
     free(buffer);
-
     freeaddrinfo(res);
     close(fd);
     close(file);
-
     return response;
 }

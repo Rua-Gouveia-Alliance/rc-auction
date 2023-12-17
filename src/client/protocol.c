@@ -712,6 +712,7 @@ char *fmt_aid(char *raw_aid) {
         return raw_aid;
 
     char *aid = (char *)malloc(sizeof(char) * (AID_SIZE + 1));
+    memset(aid, 0, sizeof(char) * (AID_SIZE + 1));
 
     if (raw_aid_size == 1) {
         sprintf(aid, "00%s", raw_aid);

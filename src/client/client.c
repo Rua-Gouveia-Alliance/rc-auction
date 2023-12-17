@@ -174,6 +174,7 @@ void open_auc(char *name, char *asset_fname, char *start_value,
         return;
     }
     char *fsize = (char *)malloc(FSIZE_SIZE * sizeof(char));
+    memset(fsize, 0, FSIZE_SIZE * sizeof(char));
     sprintf(fsize, "%d", file_bytes);
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
