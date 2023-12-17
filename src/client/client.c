@@ -506,7 +506,6 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
         case 'n':
-            // TODO: check for valid ip/url
             memset(asip, 0, sizeof(asip));
             strcpy(asip, optarg);
             break;
