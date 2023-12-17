@@ -689,6 +689,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
+            memset(asport, 0, 6);
             strncpy(asport, optarg, 5);
             break;
         }

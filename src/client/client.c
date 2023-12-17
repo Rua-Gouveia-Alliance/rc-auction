@@ -124,6 +124,7 @@ bool exit_prompt() {
         printf("error: please logout first\n");
         return false;
     }
+    printf("Exiting...\n");
     return true;
 }
 
@@ -512,7 +513,7 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            memset(asport, 0, sizeof(asport));
+            memset(asport, 0, 6);
             strncpy(asport, optarg, 5);
             break;
         }
