@@ -337,7 +337,7 @@ int parse_cls(char *msg, char *uid, char *password, char *aid) {
         return -1;
 
     strncpy(aid, token, AID_SIZE);
-    password[AID_SIZE] = '\0';
+    aid[AID_SIZE] = '\0';
 
     return 0;
 }

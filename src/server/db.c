@@ -285,7 +285,7 @@ char *bid_info(char *path) {
         return NULL;
 
     info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
-    memset(info, 0, BID_INFO_LEN);
+    memset(info, 0, (BID_INFO_LEN + 1) * sizeof(char));
     n = read(fd, info, BID_INFO_LEN);
     close(fd);
 
