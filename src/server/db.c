@@ -878,11 +878,11 @@ int bid_value_ok(char *aid, char *value) {
 
 char *create_bid_info(char *uid, char *value, time_t auction_start) {
     time_t current_time = time(NULL);
-    time_t bid_sec_time = current_time - auction_start;
     char *bid_info = (char *)malloc(sizeof(char) * (BID_INFO_LEN + 1));
     char *formatted_time = time_to_str(current_time);
 
-    sprintf(bid_info, "%s %s %s %d", uid, value, formatted_time, bid_sec_time);
+    sprintf(bid_info, "%s %s %s %ld", uid, value, formatted_time,
+            auction_start);
 
     free(formatted_time);
 
