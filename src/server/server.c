@@ -682,7 +682,7 @@ int main(int argc, char *argv[]) {
     int opt;
     while ((opt = getopt(argc, argv, "p:v")) != -1) {
         switch (opt) {
-        case 'p':
+        case 'p': {
             int port_num = atoi(optarg);
             if (port_num < 1024 || port_num > 65535) {
                 printf("%s is not a valid port\n", optarg);
@@ -691,6 +691,7 @@ int main(int argc, char *argv[]) {
 
             strncpy(asport, optarg, 5);
             break;
+        }
         case 'v':
             verbose = true;
             break;

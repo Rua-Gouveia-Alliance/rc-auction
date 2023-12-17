@@ -505,7 +505,7 @@ int main(int argc, char *argv[]) {
             memset(asip, 0, sizeof(asip));
             strcpy(asip, optarg);
             break;
-        case 'p':
+        case 'p': {
             int port_num = atoi(optarg);
             if (port_num < 1024 || port_num > 65535) {
                 printf("%s is not a valid port\n", optarg);
@@ -515,6 +515,7 @@ int main(int argc, char *argv[]) {
             memset(asport, 0, sizeof(asport));
             strncpy(asport, optarg, 5);
             break;
+        }
         case '?':
             printf("unknown argument: %c\n", opt);
             exit(EXIT_FAILURE);
