@@ -113,6 +113,8 @@ int parse_lin(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -147,6 +149,8 @@ int parse_lou(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -181,6 +185,8 @@ int parse_unr(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -314,6 +320,8 @@ int parse_cls(char *msg, char *uid, char *password, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -355,6 +363,8 @@ int parse_lma(char *msg, char *uid) {
     memset(uid, 0, UID_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -379,6 +389,8 @@ int parse_lmb(char *msg, char *uid) {
     memset(uid, 0, UID_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -403,6 +415,8 @@ int parse_sas(char *msg, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // AID
     token = strtok(NULL, " ");
@@ -430,6 +444,8 @@ int parse_bid(char *msg, char *uid, char *pass, char *aid, char *value) {
     memset(value, 0, START_VAL_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -479,6 +495,8 @@ int parse_src(char *msg, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
+    if (strlen(token) != 3)
+        return -1;
 
     // UID
     token = strtok(NULL, " ");
