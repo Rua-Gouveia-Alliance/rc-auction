@@ -468,8 +468,8 @@ bool treat_request(char *request, int socket) {
         if (parse_bid(request, uid, pass, aid, value) != -1) {
             if (verbose) {
                 printf("-----------------------------\n");
-                printf("Bid\nuid: %s\npath: %s\naid: %s\nvalue: %s", uid, pass,
-                       aid, value);
+                printf("Bid\nuid: %s\npath: %s\naid: %s\nvalue: %s\n", uid,
+                       pass, aid, value);
             }
             response = bid(uid, pass, aid, value);
         } else {

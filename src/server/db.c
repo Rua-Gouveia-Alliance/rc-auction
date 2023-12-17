@@ -276,11 +276,11 @@ char *list_auctions(char *dir_path, int limit) {
     return auctions;
 }
 
-char *bid_info(char* path) {
+char *bid_info(char *path) {
     ssize_t n;
     int fd = open(path, O_RDONLY);
     char *info;
-    
+
     if (fd == -1)
         return NULL;
 
@@ -297,12 +297,12 @@ char *bid_info(char* path) {
     return info;
 }
 
-char* fmt_bid_info(char* path) {
-    char* info = bid_info(path);
+char *fmt_bid_info(char *path) {
+    char *info = bid_info(path);
     if (info == NULL)
         return NULL;
 
-    char* fmt_info = (char *)malloc(sizeof(char) * (FMT_BID_INFO_LEN + 1));
+    char *fmt_info = (char *)malloc(sizeof(char) * (FMT_BID_INFO_LEN + 1));
     memset(fmt_info, 0, sizeof(char) * (FMT_BID_INFO_LEN + 1));
 
     sprintf(fmt_info, "B %s", info);
@@ -315,7 +315,7 @@ char *list_bids(char *aid, int limit) {
     int i, read_bids, bid_count, size;
     struct dirent *entry;
     char *bids, *bid_info, *dir_path, *bid_path;
-    
+
     dir_path = auction_bids_dir(aid);
 
     // Open the directory
@@ -384,8 +384,8 @@ char *auction_bids_dir(char *aid) {
     return bids;
 }
 
-int auction_bid_count(char* aid) {
-    char* path = auction_bids_dir(aid);
+int auction_bid_count(char *aid) {
+    char *path = auction_bids_dir(aid);
     int bid_count = count_entries(path, DT_REG);
     free(path);
     return bid_count;
@@ -466,14 +466,17 @@ char *auction_start_info(char *aid) {
     return info;
 }
 
-char* fmt_start_info(char* aid) {
-    char* info = (char*)malloc(sizeof(char) * (FMT_INFO_SIZE + 1));
+char *fmt_start_info(char *aid) {
+    char *info = (char *)malloc(sizeof(char) * (FMT_INFO_SIZE + 1));
     char uid[UID_SIZE + 1], name[NAME_SIZE + 1], fname[FNAME_SIZE + 1];
-    char start_value[START_VAL_SIZE + 1], timeactive[DUR_SIZE + 1], start_datetime[DATE_TIME_SIZE + 1];
+    char start_value[START_VAL_SIZE + 1], timeactive[DUR_SIZE + 1],
+        start_datetime[DATE_TIME_SIZE + 1];
 
-    auction_parse_info(aid, uid, name, fname, start_value, timeactive, start_datetime, NULL);
-    memset(info, 0, sizeof(char)*(FMT_INFO_SIZE + 1));
-    sprintf(info, "%s %s %s %s %s %s", uid, name, fname, start_value, start_datetime, timeactive);
+    auction_parse_info(aid, uid, name, fname, start_value, timeactive,
+                       start_datetime, NULL);
+    memset(info, 0, sizeof(char) * (FMT_INFO_SIZE + 1));
+    sprintf(info, "%s %s %s %s %s %s", uid, name, fname, start_value,
+            start_datetime, timeactive);
 
     return info;
 }
@@ -508,18 +511,17 @@ char *auction_end_info(char *aid) {
     return info;
 }
 
-char* fmt_end_info(char* aid) {
-    char* info = auction_end_info(aid);
+char *fmt_end_info(char *aid) {
+    char *info = auction_end_info(aid);
     if (info == NULL)
         return NULL;
 
-    char* fmt_info = (char *)malloc(sizeof(char) * (FMT_END_INFO_SIZE + 1));
-    memset(info, 0, sizeof(char)*(FMT_END_INFO_SIZE + 1));
+    char *fmt_info = (char *)malloc(sizeof(char) * (FMT_END_INFO_SIZE + 1));
+    memset(fmt_info, 0, sizeof(char) * (FMT_END_INFO_SIZE + 1));
     sprintf(fmt_info, "E %s", info);
     free(info);
-    return info;
+    return fmt_info;
 }
-
 
 int auction_parse_info(char *aid, char *uid, char *name, char *asset_fname,
                        char *start_value, char *timeactive,
@@ -900,7 +902,8 @@ int add_to_bids(char *aid, char *uid, char *value) {
     if (fd == -1)
         return -1;
 
-    char *bid_info = create_bid_info(uid, value, time(NULL) - auction_start_fulltime(aid));
+    char *bid_info =
+        create_bid_info(uid, value, time(NULL) - auction_start_fulltime(aid));
     n = write(fd, bid_info, BID_INFO_LEN);
     free(bid_info);
     close(fd);

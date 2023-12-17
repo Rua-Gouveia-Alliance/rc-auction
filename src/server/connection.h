@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define MAX_TCP_COUNT 100
+#define FILE_BUFFER_SIZE 1024 * 512
 
 typedef struct {
     int socket_id;

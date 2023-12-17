@@ -211,7 +211,9 @@ char *receive_tcp(int tcp_sock, bool verbose) {
             return str;
         }
 
-        n = read(tcp_sock, tcp_info->buffer, DEFAULT_SIZE);
+        char buffer[FILE_BUFFER_SIZE + 1];
+        memset(buffer, 0, FILE_BUFFER_SIZE + 1);
+        n = read(tcp_sock, buffer, FILE_BUFFER_SIZE);
         if (n == -1) {
             if (verbose)
                 printf("error: tcp read error (socket %d)\n", tcp_sock);
@@ -222,7 +224,7 @@ char *receive_tcp(int tcp_sock, bool verbose) {
             return str;
         }
 
-        n = write(file, tcp_info->buffer, n);
+        n = write(file, buffer, n);
         if (n == -1) {
             if (verbose)
                 printf("error: write to file error (%s)\n", path);
@@ -235,7 +237,7 @@ char *receive_tcp(int tcp_sock, bool verbose) {
 
         tcp_info->remaining_size -= n;
         printf("info: received %ld bytes of file %s (socket %d). remaining %ld "
-               "bytes",
+               "bytes\n",
                n, path, tcp_sock, tcp_info->remaining_size);
         if (tcp_info->remaining_size < 1) {
             if (tcp_info->remaining_size == -1) {
@@ -424,7 +426,7 @@ bool prepare_freceive(int tcp_sock, bool keep, char *response, bool verbose) {
 
         tcp_info->remaining_size -= n;
         printf("info: received %ld bytes of file %s (socket %d). remaining %ld "
-               "bytes",
+               "bytes\n",
                n, path, tcp_sock, tcp_info->remaining_size);
         if (tcp_info->remaining_size < 1) {
             printf("info: finished receiving file (socket %d)\n", tcp_sock);

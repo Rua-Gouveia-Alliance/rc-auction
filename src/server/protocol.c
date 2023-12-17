@@ -564,9 +564,9 @@ char *sas_ok_res(char *fname, char *fsize) {
 
 char *src_ok_res(char *start_info, char *bids, char *end_info) {
     int bids_size = bids == NULL ? 0 : strlen(bids);
-    int end_info_size = end_info == NULL ? 0 : END_INFO_SIZE;
+    int end_info_size = end_info == NULL ? 0 : strlen(end_info);
     int start_info_size = strlen(start_info);
-    int res_size = CODE_SIZE + 1 + 2 + 1 + start_info_size;
+    int res_size = CODE_SIZE + 1 + 2 + 1 + start_info_size + 1;
 
     if (bids_size != 0)
         res_size += 1 + bids_size;
@@ -589,12 +589,13 @@ char *src_ok_res(char *start_info, char *bids, char *end_info) {
     }
 
     if (end_info_size != 0) {
-        msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size] = ' ';
-        strcpy(
-            &msg[CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size + 1],
-            end_info);
+        int i = bids_size == 0
+                    ? CODE_SIZE + 1 + 2 + 1 + start_info_size
+                    : CODE_SIZE + 1 + 2 + 1 + start_info_size + 1 + bids_size;
+        msg[i] = ' ';
+        strcpy(&msg[i + 1], end_info);
     }
 
-    msg[res_size] = '\n';
+    msg[res_size - 1] = '\n';
     return msg;
 }
