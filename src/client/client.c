@@ -166,15 +166,13 @@ void open_auc(char *name, char *asset_fname, char *start_value,
         return;
     }
     int file_bytes = st.st_size;
-    char *fsize = (char *)malloc(FSIZE_SIZE * sizeof(char));
-    sprintf(fsize, "%d", file_bytes);
-
-    if (strlen(fsize) > FSIZE_SIZE) {
+    if (file_bytes > MAX_FSIZE) {
         printf("error: file is too big\n");
         close(fd);
-        free(fsize);
         return;
     }
+    char *fsize = (char *)malloc(FSIZE_SIZE * sizeof(char));
+    sprintf(fsize, "%d", file_bytes);
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
                       asset_fname, fsize);

@@ -62,6 +62,17 @@ bool valid_fname(char *fname) {
     return strlen(fname + i + 1) == 3 && is_lowercase(fname + i + 1);
 }
 
+bool valid_fsize(char *fsize) {
+    if (!is_numeric(fsize))
+        return false;
+
+    size_t bytes = strtol(fsize, NULL, 0);
+    if (bytes > MAX_FSIZE)
+        return false;
+
+    return true;
+}
+
 bool valid_aid(char *aid) {
     if (aid == NULL)
         return false;
@@ -288,7 +299,7 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     i += strlen(token) + 1;
 
     token = strtok(NULL, " ");
-    if (token == NULL || strlen(token) > FSIZE_SIZE)
+    if (!valid_fsize(token))
         return -1;
     if (fsize != NULL) {
         memset(fsize, 0, FSIZE_SIZE + 1);

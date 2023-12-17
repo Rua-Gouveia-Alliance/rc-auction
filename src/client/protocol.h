@@ -12,12 +12,17 @@
 #define FNAME_SIZE 24
 #define FSIZE_SIZE 8
 
+#define MAX_FSIZE 1024 * 1024 * 10
+
 #define DEFAULT_SIZE 128
 #define AUCTION_LIST_SIZE (6 * 1024)
-#define AUCTION_START_SIZE (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + BID_VAL_SIZE + 1 + DUR_SIZE)
+#define AUCTION_START_SIZE                                                     \
+    (UID_SIZE + 1 + NAME_SIZE + 1 + FNAME_SIZE + 1 + BID_VAL_SIZE + 1 +        \
+     DUR_SIZE)
 #define AUCTION_END_SIZE (19)
 #define BID_INFO_SIZE (1 + 1 + UID_SIZE + 1 + BID_VAL_SIZE + 1 + 19 + 1 + 5)
-#define BID_LIST_SIZE (AUCTION_START_SIZE + 50*BID_INFO_SIZE + AUCTION_END_SIZE)
+#define BID_LIST_SIZE                                                          \
+    (AUCTION_START_SIZE + 50 * BID_INFO_SIZE + AUCTION_END_SIZE)
 
 #define CMD_SIZE 3
 #define STATUS_OK_SIZE 7
@@ -55,7 +60,9 @@
 #define CLS_RES "RCL"
 
 #define BID_REQ "BID "
-#define BID_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1 + BID_VAL_SIZE + 1)
+#define BID_SIZE                                                               \
+    (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + AID_SIZE + 1 +              \
+     BID_VAL_SIZE + 1)
 #define BID_RES "RBD"
 
 #define SAS_REQ "SAS "
@@ -63,7 +70,9 @@
 #define SAS_RES "RSA"
 
 #define OPA_REQ "OPA "
-#define OPA_SIZE (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 + BID_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
+#define OPA_SIZE                                                               \
+    (CMD_SIZE + 1 + UID_SIZE + 1 + PASS_SIZE + 1 + NAME_SIZE + 1 +             \
+     BID_VAL_SIZE + 1 + DUR_SIZE + 1 + FNAME_SIZE + 1 + FSIZE_SIZE + 1)
 #define OPA_RES "ROA"
 
 #define STATUS_OK "OK\n"
@@ -88,37 +97,38 @@ bool logout_res(char *response, bool print);
 char *unregister_req(char *uid, char *password);
 bool unregister_res(char *response, bool print);
 
-char *lmb_req(char* uid);
-void lmb_res(char* response, bool print);
+char *lmb_req(char *uid);
+void lmb_res(char *response, bool print);
 
-char *lma_req(char* uid);
-void lma_res(char* response, bool print);
+char *lma_req(char *uid);
+void lma_res(char *response, bool print);
 
-char *src_req(char* aid);
-void src_res(char* response, bool print);
+char *src_req(char *aid);
+void src_res(char *response, bool print);
 
 char *list_req();
 void list_res(char *response, bool print);
 
-char* close_req(char* uid, char* password, char* aid);
-bool close_res(char* response, bool print);
+char *close_req(char *uid, char *password, char *aid);
+bool close_res(char *response, bool print);
 
-char* bid_req(char* uid, char* password, char* aid, char* value);
+char *bid_req(char *uid, char *password, char *aid, char *value);
 bool bid_res(char *response, bool print);
 
-char* sas_req(char* aid);
+char *sas_req(char *aid);
 
-char* opa_req(char* uid, char* password, char* name, char* start_value, char* timeactive, char* fname, char* fsize);
+char *opa_req(char *uid, char *password, char *name, char *start_value,
+              char *timeactive, char *fname, char *fsize);
 bool opa_res(char *response, bool print);
 
-char* fmt_aid(char* aid);
+char *fmt_aid(char *aid);
 
-bool is_valid_uid(char* uid);
-bool is_valid_aid(char* aid);
-bool is_valid_password(char* password);
-bool is_valid_name(char* name);
-bool is_valid_fname(char* fname);
-bool is_valid_timeactive(char* timeactive);
-bool is_valid_value(char* value);
+bool is_valid_uid(char *uid);
+bool is_valid_aid(char *aid);
+bool is_valid_password(char *password);
+bool is_valid_name(char *name);
+bool is_valid_fname(char *fname);
+bool is_valid_timeactive(char *timeactive);
+bool is_valid_value(char *value);
 
 #endif

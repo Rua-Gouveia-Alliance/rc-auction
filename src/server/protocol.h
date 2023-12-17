@@ -12,6 +12,8 @@
 #define FNAME_SIZE 24
 #define FSIZE_SIZE 8
 
+#define MAX_FSIZE 1024 * 1024 * 10
+
 #define DEFAULT_SIZE 128
 
 #define AUCTION_LIST_SIZE (6 * 1024)
