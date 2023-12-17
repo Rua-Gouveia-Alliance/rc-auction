@@ -249,7 +249,6 @@ char *list_auctions(char *dir_path, int limit) {
     memset(auctions, 0,
            (auction_count * (AUCTION_STATE_SIZE + 1) + 1) * sizeof(char));
 
-    // TODO: ordenar
     while (((entry = readdir(dir)) != NULL)) {
         if (i >= limit)
             break;
@@ -586,7 +585,6 @@ int auction_start_value(char *aid) {
     auction_parse_info(aid, NULL, NULL, NULL, value, NULL, NULL, NULL);
     value[START_VAL_SIZE] = '\0';
 
-    // TODO: atoi can throw error
     start_value = atoi(value);
     free(value);
     return start_value;
@@ -599,7 +597,6 @@ int auction_time_active(char *aid) {
     auction_parse_info(aid, NULL, NULL, NULL, NULL, value, NULL, NULL);
     value[DUR_SIZE] = '\0';
 
-    // TODO: atoi can throw error
     active_value = atoi(value);
     free(value);
     return active_value;
@@ -620,7 +617,6 @@ time_t auction_start_fulltime(char *aid) {
     auction_parse_info(aid, NULL, NULL, NULL, NULL, NULL, NULL, fulltime);
     fulltime[FULLTIME_SIZE] = '\0';
 
-    // TODO: atoi can throw error
     fulltime_value = strtol(fulltime, NULL, 0);
     free(fulltime);
     return fulltime_value;
