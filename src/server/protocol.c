@@ -99,12 +99,6 @@ bool valid_timeactive(char *timeactive) {
     return strlen(timeactive) <= DUR_SIZE && is_numeric(timeactive);
 }
 
-bool valid_cmd(char* cmd, char* target_cmd) {
-    if (cmd == NULL)
-        return false;
-    return strcmp(cmd, target_cmd) == 0;
-}
-
 int parse_lin(char *msg, char *uid, char *password) {
     int last_pos = strlen(msg) - 1;
     char *token;
@@ -119,8 +113,6 @@ int parse_lin(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, LIN_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -155,8 +147,6 @@ int parse_lou(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, LOU_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -191,8 +181,6 @@ int parse_unr(char *msg, char *uid, char *password) {
     memset(password, 0, PASS_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, UNR_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -240,7 +228,8 @@ int parse_opa(char *msg, char *uid, char *pass, char *name, char *start_value,
     strncpy(msg_cpy, msg, strlen(msg));
 
     char *token = strtok(msg_cpy, " ");
-    if (!valid_cmd(token, OPA_REQ))
+    if (token == NULL || strlen(token) != CODE_SIZE ||
+        strcmp(token, OPA_REQ) != 0)
         return -1;
     i += CODE_SIZE + 1;
 
@@ -325,8 +314,6 @@ int parse_cls(char *msg, char *uid, char *password, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, CLS_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -368,8 +355,6 @@ int parse_lma(char *msg, char *uid) {
     memset(uid, 0, UID_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, LMA_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -394,8 +379,6 @@ int parse_lmb(char *msg, char *uid) {
     memset(uid, 0, UID_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, LMB_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -420,8 +403,6 @@ int parse_sas(char *msg, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, SAS_REQ))
-        return -1;
 
     // AID
     token = strtok(NULL, " ");
@@ -449,8 +430,6 @@ int parse_bid(char *msg, char *uid, char *pass, char *aid, char *value) {
     memset(value, 0, START_VAL_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, BID_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
@@ -500,8 +479,6 @@ int parse_src(char *msg, char *aid) {
     memset(aid, 0, AID_SIZE + 1);
 
     token = strtok(msg, " ");
-    if (!valid_cmd(token, SRC_REQ))
-        return -1;
 
     // UID
     token = strtok(NULL, " ");
