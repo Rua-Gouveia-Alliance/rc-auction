@@ -107,14 +107,9 @@ void unregister() {
     }
 
     ok = unregister_res(response, true);
-    if (!ok) {
-        free(request);
-        free(response);
-        return;
-    }
+    if (!ok)
+        printf("error: server side unregister failed\n");
 
-    // TODO: should we logout if unregistered goes wrong?
-    // clear current uid and password
     memset(user.uid, 0, sizeof(user.uid));
     memset(user.password, 0, sizeof(user.password));
     user.logged_in = false;
