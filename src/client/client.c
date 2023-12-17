@@ -472,7 +472,12 @@ int main(int argc, char *argv[]) {
             strcpy(asip, optarg);
             break;
         case 'p':
-            // TODO: check for valid port num
+            int port_num = atoi(optarg);
+            if (port_num < 1024 || port_num > 65535) {
+                printf("%s is not a valid port\n", optarg);
+                exit(EXIT_FAILURE);
+            }
+
             memset(asport, 0, sizeof(asport));
             strncpy(asport, optarg, 5);
             break;
