@@ -192,7 +192,6 @@ void open_auc(char *name, char *path, char *start_value, char *timeactive) {
 
     request = opa_req(user.uid, user.password, name, start_value, timeactive,
                       asset_fname, fsize);
-    printf("request: %s\n", request);
     response = send_file(asip, asport, request, strlen(request), asset_fname,
                          path, DEFAULT_SIZE);
     if (response == NULL) {

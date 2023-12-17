@@ -427,9 +427,7 @@ char *auction_asset_path(char *aid) {
     if (entry == NULL)
         return NULL;
 
-    printf("viewing directory: %s\n", asset);
     while (((entry = readdir(dir)) != NULL)) {
-        printf("%s\n", entry->d_name);
         if (strcmp(entry->d_name, "..") != 0 &&
             strcmp(entry->d_name, ".") != 0) {
             path = get_filename(asset, entry->d_name, "");

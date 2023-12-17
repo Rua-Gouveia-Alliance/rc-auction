@@ -270,9 +270,10 @@ bool treat_request(char *request, int socket) {
         } else
             response = bad_syntax_res();
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -290,9 +291,10 @@ bool treat_request(char *request, int socket) {
         } else
             response = bad_syntax_res();
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -310,9 +312,10 @@ bool treat_request(char *request, int socket) {
         } else
             response = bad_syntax_res();
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -344,9 +347,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         if (is_req_ok(response)) {
             free(request);
@@ -376,9 +380,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_tcp(socket, response, verbose);
         break;
@@ -400,9 +405,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -424,9 +430,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -439,9 +446,10 @@ bool treat_request(char *request, int socket) {
 
         response = list();
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -464,9 +472,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         if (is_req_ok(response)) {
             path = auction_asset_path(aid);
@@ -498,9 +507,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_tcp(socket, response, verbose);
         break;
@@ -522,9 +532,10 @@ bool treat_request(char *request, int socket) {
             response = bad_syntax_res();
         }
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         send_udp(socket, response, NULL, verbose);
         break;
@@ -537,9 +548,10 @@ bool treat_request(char *request, int socket) {
 
         response = bad_syntax_res();
 
-        if (verbose)
+        if (verbose) {
             printf("Sending: %s\n", response);
-        printf("-----------------------------\n\n");
+            printf("-----------------------------\n\n");
+        }
 
         if (socket == udp_sock)
             send_udp(socket, response, NULL, verbose);
