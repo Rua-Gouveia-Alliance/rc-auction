@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 static char asport[] = "58012"; // 58000 + group number
-static bool verbose = true;     // TODO: default is false
+static bool verbose = false;
 static int tcp_main = -1, udp_sock = -1;
 
 void int_handler(int _) {
@@ -85,16 +85,14 @@ char *logout(char *uid, char *password) {
     }
 
     // Wrong password
-    return default_res(LOU_RES,
-                       STATUS_ERR); // TODO: Decidir o que responder aqui
+    return bad_syntax_res();
 }
 
 char *unregister(char *uid, char *password) {
     if (!user_registered(uid))
         return default_res(UNR_RES, STATUS_UNR);
     else if (!user_ok_password(uid, password))
-        return default_res(UNR_RES,
-                           STATUS_ERR); // TODO: Decidir o que responder aqui
+        return bad_syntax_res();
     else if (!user_loggedin(uid))
         return default_res(UNR_RES, STATUS_NOK);
 
@@ -220,8 +218,7 @@ char *bid(char *uid, char *password, char *aid, char *value) {
     else if (!user_loggedin(uid))
         return default_res(BID_RES, STATUS_NLG);
     else if (!user_ok_password(uid, password))
-        return default_res(BID_RES,
-                           STATUS_ERR); // TODO: Decidir o que responder aqui
+        return bad_syntax_res();
     else if ((value_ok = bid_value_ok(aid, value)) == -1)
         return server_error_res();
     else if (!value_ok)
@@ -686,7 +683,12 @@ int main(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, "p:v")) != -1) {
         switch (opt) {
         case 'p':
-            // TODO: check for valid port num
+            int port_num = atoi(optarg);
+            if (port_num < 1024 || port_num > 65535) {
+                printf("%s is not a valid port\n", optarg);
+                exit(EXIT_FAILURE);
+            }
+
             strncpy(asport, optarg, 5);
             break;
         case 'v':
@@ -694,6 +696,7 @@ int main(int argc, char *argv[]) {
             break;
         case '?':
             printf("Unknown argument: %c\n", opt);
+            exit(EXIT_FAILURE);
             break;
         }
     }
